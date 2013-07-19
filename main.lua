@@ -131,108 +131,108 @@ end
 MODTITLES = {"Shape", "Color", "Hull", "Weapon", "Flaw"}
 MODDESC = {{"The BOX is a easy shape to furnish.", "The TRIANGLE blends standard ship design and powerful attack vectors.", "The CIRCLE shape is powerful, the enemy doesn't know what way you're facing."}, {"RED is the color of a angry romulan warbird.", "GREEN is the color of peace.", "BLUE is a kinda nice color."}, {"WOOD may not be the best material to build a spaceship of but it's cheap and pretty durable", "IRON is the material most cruisers are made of, but they are slow because of it.", "GLASS is really fragile but also really light"}, {"The ROCKETS are powerful and reliable for a first craft owner.", "The ATOM BOMB is a truly devestating weapon but it also takes time to reload.", "The SLINGSHOT might not be the most dangerous weapon but it takes no time to reload"}, {"FRAGILE: The architect was lazy and didn't really consider structural integrity.", "WEAK ENGINE: The mechanics has made a engine that is weak, it might even be too weak.", "HEAT PROBLEM: The engineers forgot to install proper cooling. The heat from the engine and guns will be a problem and there is no excuse for that."}}
 
-	--------------------------------------------------
-	local p1place = 0
-	p1data = {0,0,0,0,0}
-	local p1craftready = false
-	local p2place = 0
-	p2data = {0,0,0,0,0}
-	local p2craftready = false
-	
-	function craft_setup()
-		p2place = 0
-	end
+--------------------------------------------------
+local p1place = 0
+p1data = {0,0,0,0,0}
+local p1craftready = false
+local p2place = 0
+p2data = {0,0,0,0,0}
+local p2craftready = false
 
-	local TEXTWIDTH = 300
+function craft_setup()
+	p2place = 0
+end
 
-	function craft_draw_player(ready,data,place,x,d,tx,align)
-		for i=0, 4 do
-			local y = 10+i*110
-			SetColor(data[i+1])
-			Draw(gfxbox, x, y)
-			if ready == false then
-			if place == i then
-				SetColor(mod3(data[place+1]-1))
-				Draw(gfxbox, x+d*110, y)
-				SetColor(mod3(data[place+1]+1))
-				Draw(gfxbox, x+d*110*2, y)
-			end
+local TEXTWIDTH = 300
+
+function craft_draw_player(ready,data,place,x,d,tx,align)
+	for i=0, 4 do
+		local y = 10+i*110
+		SetColor(data[i+1])
+		Draw(gfxbox, x, y)
+		if ready == false then
+		if place == i then
+			SetColor(mod3(data[place+1]-1))
+			Draw(gfxbox, x+d*110, y)
+			SetColor(mod3(data[place+1]+1))
+			Draw(gfxbox, x+d*110*2, y)
 		end
-			SetDefaultColor()
+	end
+		SetDefaultColor()
+	end
+	
+	BeginPrint()
+		if ready then
+			love.graphics.printf(" < R E A D Y > ", tx, 500, TEXTWIDTH, "center")
+		else
+			love.graphics.printf(MODTITLES[place+1] .. ":", tx, 100, TEXTWIDTH, align)
+			love.graphics.printf(MODDESC[place+1][data[place+1]+1], tx, 120, TEXTWIDTH, align)
+		end
+	EndPrint()
+end
+
+function craft_draw()
+	craft_draw_player(p1craftready, p1data,p1place,10,1,120,"left")
+	craft_draw_player(p2craftready, p2data,p2place,690,-1,680-TEXTWIDTH,"right")
+end
+
+function craft_onkey(key, down)
+	if down then
+		if p1craftready == false then
+		if key == p1up then
+			p1place = p1place - 1
+		end
+		if key == p1down then
+			p1place = p1place + 1
+		end
+		if p1place == -1 then
+			p1place = 4
+		end
+		if p1place == 5 then
+			p1place = 0
+		end
+		if key == p1left then
+			p1data[p1place+1] = mod3(p1data[p1place+1]-1)
+		end
+		if key == p1right then
+			p1data[p1place+1] = mod3(p1data[p1place+1]+1)
+		end
+	end
+		if key == p1action then
+			p1craftready = not p1craftready
 		end
 		
-		BeginPrint()
-			if ready then
-				love.graphics.printf(" < R E A D Y > ", tx, 500, TEXTWIDTH, "center")
-			else
-				love.graphics.printf(MODTITLES[place+1] .. ":", tx, 100, TEXTWIDTH, align)
-				love.graphics.printf(MODDESC[place+1][data[place+1]+1], tx, 120, TEXTWIDTH, align)
-			end
-		EndPrint()
+		if p2craftready == false then
+		if key == p2up then
+			p2place = p2place - 1
+		end
+		if key == p2down then
+			p2place = p2place + 1
+		end
+		if p2place == -1 then
+			p2place = 4
+		end
+		if p2place == 5 then
+			p2place = 0
+		end
+		if key == p2left then
+			p2data[p2place+1] = mod3(p2data[p2place+1]+1)
+		end
+		if key == p2right then
+			p2data[p2place+1] = mod3(p2data[p2place+1]-1)
+		end
 	end
+		if key == p2action then
+			p2craftready = not p2craftready
+		end
+	end
+end
 
-	function craft_draw()
-		craft_draw_player(p1craftready, p1data,p1place,10,1,120,"left")
-		craft_draw_player(p2craftready, p2data,p2place,690,-1,680-TEXTWIDTH,"right")
+function craft_update(dt)
+	if p1craftready and p2craftready then
+		SetState(STATEGAME)
 	end
-
-	function craft_onkey(key, down)
-		if down then
-			if p1craftready == false then
-			if key == p1up then
-				p1place = p1place - 1
-			end
-			if key == p1down then
-				p1place = p1place + 1
-			end
-			if p1place == -1 then
-				p1place = 4
-			end
-			if p1place == 5 then
-				p1place = 0
-			end
-			if key == p1left then
-				p1data[p1place+1] = mod3(p1data[p1place+1]-1)
-			end
-			if key == p1right then
-				p1data[p1place+1] = mod3(p1data[p1place+1]+1)
-			end
-		end
-			if key == p1action then
-				p1craftready = not p1craftready
-			end
-			
-			if p2craftready == false then
-			if key == p2up then
-				p2place = p2place - 1
-			end
-			if key == p2down then
-				p2place = p2place + 1
-			end
-			if p2place == -1 then
-				p2place = 4
-			end
-			if p2place == 5 then
-				p2place = 0
-			end
-			if key == p2left then
-				p2data[p2place+1] = mod3(p2data[p2place+1]+1)
-			end
-			if key == p2right then
-				p2data[p2place+1] = mod3(p2data[p2place+1]-1)
-			end
-		end
-			if key == p2action then
-				p2craftready = not p2craftready
-			end
-		end
-	end
-
-	function craft_update(dt)
-		if p1craftready and p2craftready then
-			SetState(STATEGAME)
-		end
-	end
+end
 
 ---------------------------------------------------
 
