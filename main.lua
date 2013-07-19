@@ -29,19 +29,41 @@ function Sfx(p)
 end
 
 function BeginPrint()
-	if worldindex == 1 then
-		love.graphics.setColor(0, 0, 0)
-	end
+	love.graphics.setColor(255, 255, 255)
 end
 
 function EndPrint()
 	love.graphics.setColor(255, 255, 255)
 end
 
+function SetDefaultColor()
+	love.graphics.setColor(255, 255, 255)
+end
+
+function SetColor(v)
+	if v == 0 then
+		love.graphics.setColor(255, 0, 0)
+	elseif v == 1 then
+		love.graphics.setColor(0, 255, 0)
+	elseif v == 2 then
+		love.graphics.setColor(0, 0, 255)
+	else
+		love.graphics.setColor(255, 255, 255)
+	end
+end
+
+function mod3(x)
+	if x >= 3 then
+		return 0
+	elseif x < 0 then
+		return 2
+	end
+	return x
+end
 function love.load()
 	love.graphics.setFont(love.graphics.newFont("PressStart2P.ttf", 20))
 	math.randomseed( tonumber(tostring(os.time()):reverse():sub(1,6)) )
-	SetState(STATETITLE)
+	SetState(STATECRAFT)
 end
 
 --------------------------------------------------
@@ -57,6 +79,17 @@ STATESTATE = 6
 state = STATENULL
 --------------------------------------------------
 
+local gfxbox = Img("assets/box.png")
+
+--------------------------------------------------
+
+local p1left = "left"
+local p1right = "right"
+local p1down = "down"
+local p1up = "up"
+
+--------------------------------------------------
+
 function title_setup()
 end
 
@@ -66,27 +99,71 @@ function title_draw()
 	EndPrint()
 end
 
-function title_onkey(key)
-	if key == " " then
-		SetState(STATECRAFT)
+function title_onkey(key, down)
+	if down==false then
+		if key == " " then
+			SetState(STATECRAFT)
+		end
 	end
 end
+
+
 
 function title_update(dt)
 end
 
+MODTITLES = {"Craft", "Color", "Hull", "Weapon", "Design flaw"}
+MODDESC = {{"Box", "Triangle", "Cirlce"}, {"Red", "Green", "Blue"}, {"Wood", "Iron", "Glass"}, {"Rockets", "Atom bomb", "Slingshot"}, {"Fragile", "Weak engine", "Heat problem"}}
+p1data = {0,0,0,0,0}
 	--------------------------------------------------
-
+	local p1place = 0
+	
 	function craft_setup()
+		p1place = 0
 	end
 
 	function craft_draw()
+		
+		for i=0, 4 do
+			local y = 10+i*110
+			SetColor(p1data[i+1])
+			Draw(gfxbox, 10, y)
+			if p1place == i then
+				SetColor(mod3(p1data[p1place+1]-1))
+				Draw(gfxbox, 120, y)
+				SetColor(mod3(p1data[p1place+1]+1))
+				Draw(gfxbox, 230, y)
+			end
+				SetDefaultColor()
+		end
+		
 		BeginPrint()
-			Print("Craft setup", 300, 100)
+			Print(MODTITLES[p1place+1] .. ":", 120, 100)
+			Print(MODDESC[p1place+1][p1data[p1place+1]+1], 120, 200)
 		EndPrint()
 	end
 
-	function craft_onkey(key)
+	function craft_onkey(key, down)
+		if down then
+			if key == p1up then
+				p1place = p1place - 1
+			end
+			if key == p1down then
+				p1place = p1place + 1
+			end
+			if p1place == -1 then
+				p1place = 4
+			end
+			if p1place == 5 then
+				p1place = 0
+			end
+			if key == p1left then
+				p1data[p1place+1] = mod3(p1data[p1place+1]-1)
+			end
+			if key == p1right then
+				p1data[p1place+1] = mod3(p1data[p1place+1]+1)
+			end
+		end
 	end
 
 	function craft_update(dt)
@@ -114,13 +191,22 @@ function love.draw()
 	end
 end
 
+function love.keypressed(key)
+	print("Key pressed " .. key)
+	if state == STATETITLE then title_onkey(key, true)
+	elseif state == STATECRAFT then craft_onkey(key, true)
+	else
+		print("unknown gamestate " .. state)
+	end
+end
+	
 function love.keyreleased(key)
 	if key == "escape" then
 		love.event.push("quit")   -- actually causes the app to quit
 	end
 	
-	if state == STATETITLE then title_onkey(key)
-	elseif state == STATECRAFT then craft_onkey(key)
+	if state == STATETITLE then title_onkey(key, false)
+	elseif state == STATECRAFT then craft_onkey(key, false)
 	else
 		print("unknown gamestate " .. state)
 	end
