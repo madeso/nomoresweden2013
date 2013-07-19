@@ -70,6 +70,7 @@ end
 map = nil
 
 function love.load()
+	love.mouse.setVisible(false)
 	love.graphics.setFont(love.graphics.newFont("PressStart2P.ttf", 20))
 	math.randomseed( tonumber(tostring(os.time()):reverse():sub(1,6)) )
 	SetState(STATETITLE)
