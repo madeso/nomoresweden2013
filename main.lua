@@ -28,11 +28,6 @@ function Sfx(p)
 	return s
 end
 
-function love.load()
-	love.graphics.setFont(love.graphics.newFont("PressStart2P.ttf", 20))
-	math.randomseed( tonumber(tostring(os.time()):reverse():sub(1,6)) )
-end
-
 function BeginPrint()
 	if worldindex == 1 then
 		love.graphics.setColor(0, 0, 0)
@@ -43,12 +38,23 @@ function EndPrint()
 	love.graphics.setColor(255, 255, 255)
 end
 
+function love.load()
+	love.graphics.setFont(love.graphics.newFont("PressStart2P.ttf", 20))
+	math.randomseed( tonumber(tostring(os.time()):reverse():sub(1,6)) )
+	SetState(STATETITLE)
+end
+
 --------------------------------------------------
 
-STATETITLE = 0
+STATENULL = 0
+STATESETUP = 1
+STATETITLE = 2
+STATECRAFT = 3
+STATEGAME = 4
+STATESTATE = 6
 
 
-state = STATETITLE
+state = STATENULL
 --------------------------------------------------
 
 function title_setup()
@@ -56,7 +62,7 @@ end
 
 function title_draw()
 	BeginPrint()
-		Print("The game", 300, 300)
+		Print("The game", 300, 100)
 	EndPrint()
 end
 
@@ -68,7 +74,8 @@ end
 
 ---------------------------------------------------
 
-function Setup()
+function SetState(nextstate)
+	state = nextstate
 	if state == STATETITLE then title_setup()
 	else
 		print("unknown gamestate " .. state)
