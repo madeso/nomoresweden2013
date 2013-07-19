@@ -60,10 +60,19 @@ function mod3(x)
 	end
 	return x
 end
+
+function RStat()
+	--return 0
+	return math.random(3)-1
+end
+
 function love.load()
 	love.graphics.setFont(love.graphics.newFont("PressStart2P.ttf", 20))
 	math.randomseed( tonumber(tostring(os.time()):reverse():sub(1,6)) )
 	SetState(STATECRAFT)
+	
+	p1data = {RStat(),RStat(),RStat(),RStat(),RStat()}
+	p2data = {RStat(),RStat(),RStat(),RStat(),RStat()}
 end
 
 --------------------------------------------------
@@ -124,10 +133,10 @@ MODDESC = {{"The BOX is a easy shape to furnish.", "The TRIANGLE blends standard
 
 	--------------------------------------------------
 	local p1place = 0
-	local p1data = {0,0,0,0,0}
+	p1data = {0,0,0,0,0}
 	local p1craftready = false
 	local p2place = 0
-	local p2data = {0,0,0,0,0}
+	p2data = {0,0,0,0,0}
 	local p2craftready = false
 	
 	function craft_setup()
