@@ -69,7 +69,7 @@ end
 function love.load()
 	love.graphics.setFont(love.graphics.newFont("PressStart2P.ttf", 20))
 	math.randomseed( tonumber(tostring(os.time()):reverse():sub(1,6)) )
-	SetState(STATECRAFT)
+	SetState(STATETITLE)
 	
 	p1data = {RStat(),RStat(),RStat(),RStat(),RStat()}
 	p2data = {RStat(),RStat(),RStat(),RStat(),RStat()}
@@ -92,21 +92,71 @@ local gfxbox = Img("assets/box.png")
 
 --------------------------------------------------
 
-local p1left = "a"
-local p1right = "d"
-local p1down = "s"
-local p1up = "w"
-local p1action = "q"
+p1left = "a"
+p1right = "d"
+p1down = "s"
+p1up = "w"
+p1action = "q"
+p1start = "e"
 
-local p2left = "left"
-local p2right = "right"
-local p2down = "down"
-local p2up = "up"
-local p2action = "return"
+p2left = "left"
+p2right = "right"
+p2down = "down"
+p2up = "up"
+p2action = "return"
+p2start = "rshift"
+	
+function setkeyboard()
+	p1left = "a"
+	p1right = "d"
+	p1down = "s"
+	p1up = "w"
+	p1action = "q"
+	p1start = "e"
+
+	p2left = "left"
+	p2right = "right"
+	p2down = "down"
+	p2up = "up"
+	p2action = "return"
+	p2start = "rshift"
+end
+
+function setgamepads()
+	local p1 = "joy1."
+	p1left = p1.."-ax4"
+	p1right = p1.."+ax4"
+	p1down = p1.."+ax5"
+	p1up = p1.."-ax5"
+	p1action = p1.."btn3"
+	p1start = p1.."btn4"
+
+	local p2 = "joy2."
+	p2left = p2.."-ax4"
+	p2right = p2.."+ax4"
+	p2down = p2.."+ax5"
+	p2up = p2.."-ax5"
+	p2action = p2.."btn3"
+	p2start = p2.."btn4"
+end
+
+function determinesuperkey(key)
+	if key == " " then
+		return 1
+	elseif key == "joy1.btn10" then
+		return 2
+	elseif key == "joy2.btn10" then
+		return 2
+	else
+		return 0
+	end
+end
 
 --------------------------------------------------
 
 function title_setup()
+	p1craftready = false
+	p2craftready = false
 end
 
 function title_draw()
@@ -117,7 +167,12 @@ end
 
 function title_onkey(key, down)
 	if down==false then
-		if key == " " then
+		local super = determinesuperkey(key)
+		if super == 1 then
+			setkeyboard()
+			SetState(STATECRAFT)
+		elseif super==2 then
+			setgamepads()
 			SetState(STATECRAFT)
 		end
 	end
@@ -132,14 +187,15 @@ MODTITLES = {"Shape", "Color", "Hull", "Weapon", "Flaw"}
 MODDESC = {{"The BOX is a easy shape to furnish.", "The TRIANGLE blends standard ship design and powerful attack vectors.", "The CIRCLE shape is powerful, the enemy doesn't know what way you're facing."}, {"RED is the color of a angry romulan warbird.", "GREEN is the color of peace.", "BLUE is a kinda nice color."}, {"WOOD may not be the best material to build a spaceship of but it's cheap and pretty durable", "IRON is the material most cruisers are made of, but they are slow because of it.", "GLASS is really fragile but also really light"}, {"The ROCKETS are powerful and reliable for a first craft owner.", "The ATOM BOMB is a truly devestating weapon but it also takes time to reload.", "The SLINGSHOT might not be the most dangerous weapon but it takes no time to reload"}, {"FRAGILE: The architect was lazy and didn't really consider structural integrity.", "WEAK ENGINE: The mechanics has made a engine that is weak, it might even be too weak.", "HEAT PROBLEM: The engineers forgot to install proper cooling. The heat from the engine and guns will be a problem and there is no excuse for that."}}
 
 --------------------------------------------------
-local p1place = 0
+p1place = 0
 p1data = {0,0,0,0,0}
-local p1craftready = false
-local p2place = 0
+p1craftready = false
+p2place = 0
 p2data = {0,0,0,0,0}
-local p2craftready = false
+p2craftready = false
 
 function craft_setup()
+	p1place = 0
 	p2place = 0
 end
 
@@ -246,6 +302,9 @@ function game_draw()
 end
 
 function game_onkey(key,down)
+	if down==false and determinesuperkey(key)>0 then
+		SetState(STATETITLE)
+	end
 end
 	
 function game_update(dt)
@@ -276,32 +335,84 @@ function love.draw()
 	end
 end
 
-function love.keypressed(key)
-	print("Key pressed " .. key)
-	if state == STATETITLE then title_onkey(key, true)
-	elseif state == STATECRAFT then craft_onkey(key, true)
-	elseif state == STATEGAME then game_onkey(key, true)
-	else
-		print("unknown gamestate " .. state)
-	end
-end
-	
-function love.keyreleased(key)
-	if key == "escape" then
-		love.event.push("quit")   -- actually causes the app to quit
+function onkey(key, down)
+	if down == false then
+		if key == "escape" then
+			love.event.push("quit")   -- actually causes the app to quit
 		elseif key == "<" then
-			love.graphics.toggleFullscreen()
+				love.graphics.toggleFullscreen()
+		end
 	end
-	
-	if state == STATETITLE then title_onkey(key, false)
-	elseif state == STATECRAFT then craft_onkey(key, false)
-	elseif state == STATEGAME then game_onkey(key,false)
+	print("Key " .. key .. " changed to ".. tostring(down))
+	if state == STATETITLE then title_onkey(key, down)
+	elseif state == STATECRAFT then craft_onkey(key, down)
+	elseif state == STATEGAME then game_onkey(key, down)
 	else
 		print("unknown gamestate " .. state)
 	end
 end
 
+function love.keypressed(key)
+	onkey(key,true)
+end
+	
+function love.keyreleased(key)
+	onkey(key, false)
+end
+
+function love.joystickpressed( joystick, button )
+	onkey("joy"..tostring(joystick)..".btn"..tostring(button), true)
+end
+
+function love.joystickreleased( joystick, button )
+	onkey("joy"..tostring(joystick)..".btn"..tostring(button), false)
+end
+
+function sendjoykeys()
+	local joysticks = love.joystick.getNumJoysticks()
+
+	if js == nil then
+		js = {}
+		for joystick=1, joysticks do
+			local data = {}
+			data.axes = love.joystick.getNumAxes(joystick)
+			data.axesl = {}
+			data.axesr = {}
+			for axis=1, data.axes do
+				data.axesl[axis] = false
+				data.axesr[axis] = false
+			end
+			js[joystick] = data
+		end
+	end
+
+	for joystick=1, joysticks do
+		local data = js[joystick]
+		for axis=1, data.axes do
+			local direction = love.joystick.getAxis(joystick, axis)
+			local left = false
+			local right = false
+			if direction > 0.5 then
+				right = true
+			end
+			if direction < -0.5 then
+				left = true
+			end
+			if data.axesl[axis] ~= left then
+				data.axesl[axis] = left
+				onkey("joy"..tostring(joystick)..".-ax"..tostring(axis), left)
+			end
+			if data.axesr[axis] ~= right then
+				data.axesr[axis] = right
+				onkey("joy"..tostring(joystick)..".+ax"..tostring(axis), right)
+			end
+		end
+	end
+end
+
+
 function love.update(dt)
+	sendjoykeys()
 	if state == STATETITLE then title_update(dt)
 	elseif state == STATECRAFT then craft_update(dt)
 	elseif state == STATEGAME then game_update(dt)
