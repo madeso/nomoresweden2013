@@ -1,6 +1,10 @@
 ATL_Loader = require("AdvTiledLoader.Loader")
 ATL_Loader.path = "assets/"
 
+SHIPRADIUS = 7
+FORCE = 100
+DENSITY = 100
+
 -- Aliases
 local Draw = love.graphics.draw
 local PauseAllAudio = love.audio.pause
@@ -77,6 +81,13 @@ function addRect(x,y,w,h)
 	local shape = love.physics.newRectangleShape(w,h)
 	local fix = love.physics.newFixture(body, shape, 1)
 end
+	
+function addShip(x,y)
+	local body = love.physics.newBody(world,x,y,"dynamic")
+	local shape = love.physics.newCircleShape(SHIPRADIUS)
+	local fix = love.physics.newFixture(body, shape, DENSITY)
+	return body
+end
 
 function love.load()
 	love.mouse.setVisible(false)
@@ -90,8 +101,10 @@ function love.load()
 	map = ATL_Loader.load("world.tmx")
 	map.useSpriteBatch = true
 	map.drawObjects = false
-	
-	world = love.physics.newWorld(0,0,false)
+		
+	world = love.physics.newWorld(0,9,false)
+		p1body = addShip(300, 30)
+		p2body = addShip(500, 30)
 	for tilename, tilelayer in pairs(map.tileLayers) do
 		print("Working on ", tilename, map.height, map.width, tilelayer)
 		if tilename == "col" then
@@ -129,6 +142,7 @@ state = STATENULL
 --------------------------------------------------
 
 local gfxbox = Img("assets/box.png")
+local gfxcircle = Img("assets/circle.png")
 
 --------------------------------------------------
 
@@ -333,6 +347,13 @@ end
 ---------------------------------------------------
 
 function game_setup()
+	p1body:setPosition(200, 50)
+	p1body:setPosition(400, 50)
+end
+	
+function gamedrawship(body, data)
+	local x, y = body:getPosition()
+	Draw(gfxcircle, x-SHIPRADIUS,y-SHIPRADIUS)
 end
 	
 function game_draw()
@@ -340,15 +361,39 @@ function game_draw()
 	BeginPrint()
 		Print("Let the games begin!", 400, 300)
 	EndPrint()
+			
+	gamedrawship(p1body, p1data)
+	gamedrawship(p2body, p2data)
+end
+
+function game_onkey_ship(body, key, down, left, right, up, down)
+	if down then
+		if key == left then
+			body:applyLinearImpulse(-FORCE,0)
+		end
+		if key == right then
+			body:applyLinearImpulse(FORCE,0)
+		end
+		if key == up then
+			body:applyLinearImpulse(0,-FORCE)
+		end
+		if key == down then
+			body:applyLinearImpulse(0,FORCE)
+		end
+	end
 end
 
 function game_onkey(key,down)
 	if down==false and determinesuperkey(key)>0 then
 		SetState(STATETITLE)
 	end
+	
+	game_onkey_ship(p1body, key, down, p1left, p1right, p1up, p1down)
+	game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down)
 end
 	
 function game_update(dt)
+	world:update(dt)
 end
 
 ---------------------------------------------------
