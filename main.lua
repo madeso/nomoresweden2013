@@ -1,4 +1,5 @@
-
+ATL_Loader = require("AdvTiledLoader.Loader")
+ATL_Loader.path = "assets/"
 
 -- Aliases
 local Draw = love.graphics.draw
@@ -66,6 +67,8 @@ function RStat()
 	return math.random(3)-1
 end
 
+map = nil
+
 function love.load()
 	love.graphics.setFont(love.graphics.newFont("PressStart2P.ttf", 20))
 	math.randomseed( tonumber(tostring(os.time()):reverse():sub(1,6)) )
@@ -73,6 +76,32 @@ function love.load()
 	
 	p1data = {RStat(),RStat(),RStat(),RStat(),RStat()}
 	p2data = {RStat(),RStat(),RStat(),RStat(),RStat()}
+	
+	map = ATL_Loader.load("world.tmx")
+	map.useSpriteBatch = true
+	map.drawObjects = false
+	
+	for tilename, tilelayer in pairs(map.tileLayers) do
+		print("Working on ", tilename, map.height, map.width, tilelayer)
+		if tilename == "col" then
+			for y=1,map.height do
+				for x=1,map.width do
+					local tile = tilelayer.tileData(x,y)
+					if tile and tile ~= nil then 
+						--print(x,y, tilenumber)
+						local epsilon = 0.0
+						--local ctile = collider:addRectangle((x)* map.tileWidth, (y) * map.tileHeight, map.tileWidth-epsilon, map.tileHeight-epsilon)
+						print("detected collision tile!")
+						--ctile.type = nil
+						--collider:addToGroup("tiles", ctile)
+						--collider:setPassive(ctile)
+						--tiles[#self.tiles+1] = ctile
+						--added = added + 1
+					end
+				end
+			end
+		end
+	end
 end
 
 --------------------------------------------------
@@ -296,6 +325,7 @@ function game_setup()
 end
 	
 function game_draw()
+	map:draw()
 	BeginPrint()
 		Print("Let the games begin!", 400, 300)
 	EndPrint()
