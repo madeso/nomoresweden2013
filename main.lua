@@ -112,8 +112,8 @@ end
 function title_update(dt)
 end
 
-MODTITLES = {"Craft", "Color", "Hull", "Weapon", "Design flaw"}
-MODDESC = {{"Box", "Triangle", "Cirlce"}, {"Red", "Green", "Blue"}, {"Wood", "Iron", "Glass"}, {"Rockets", "Atom bomb", "Slingshot"}, {"Fragile", "Weak engine", "Heat problem"}}
+MODTITLES = {"Shape", "Color", "Hull", "Weapon", "Flaw"}
+MODDESC = {{"The BOX is a easy shape to furnish.", "The TRIANGLE blends standard ship design and powerful attack vectors.", "The CIRCLE shape is powerful, the enemy doesn't know what way you're facing."}, {"RED is the color of a angry romulan warbird.", "GREEN is the color of peace.", "BLUE is a kinda nice color."}, {"WOOD may not be the best material to build a spaceship of but it's cheap and pretty durable", "IRON is the material most cruisers are made of, but they are slow because of it.", "GLASS is really fragile but also really light"}, {"The ROCKETS are powerful and reliable for a first craft owner.", "The ATOM BOMB is a truly devestating weapon but it also takes time to reload.", "The SLINGSHOT might not be the most dangerous weapon but it takes no time to reload"}, {"FRAGILE: The architect was lazy and didn't really consider structural integrity.", "WEAK ENGINE: The mechanics has made a engine that is weak, it might even be too weak.", "HEAT PROBLEM: The engineers forgot to install proper cooling. The heat from the engine and guns will be a problem and there is no excuse for that."}}
 p1data = {0,0,0,0,0}
 	--------------------------------------------------
 	local p1place = 0
@@ -138,8 +138,9 @@ p1data = {0,0,0,0,0}
 		end
 		
 		BeginPrint()
-			Print(MODTITLES[p1place+1] .. ":", 120, 100)
-			Print(MODDESC[p1place+1][p1data[p1place+1]+1], 120, 200)
+			love.graphics.printf(MODTITLES[p1place+1] .. ":", 120, 100, 200, "left")
+			love.graphics.printf(MODDESC[p1place+1][p1data[p1place+1]+1], 120, 120, 200, "left")
+	
 		EndPrint()
 	end
 
