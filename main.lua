@@ -204,6 +204,8 @@ end
 function love.keyreleased(key)
 	if key == "escape" then
 		love.event.push("quit")   -- actually causes the app to quit
+		elseif key == "<" then
+			love.graphics.toggleFullscreen()
 	end
 	
 	if state == STATETITLE then title_onkey(key, false)
