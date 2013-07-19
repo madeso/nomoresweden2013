@@ -67,16 +67,38 @@ function title_draw()
 end
 
 function title_onkey(key)
+	if key == " " then
+		SetState(STATECRAFT)
+	end
 end
 
 function title_update(dt)
 end
 
+	--------------------------------------------------
+
+	function craft_setup()
+	end
+
+	function craft_draw()
+		BeginPrint()
+			Print("Craft setup", 300, 100)
+		EndPrint()
+	end
+
+	function craft_onkey(key)
+	end
+
+	function craft_update(dt)
+	end
+
 ---------------------------------------------------
 
 function SetState(nextstate)
 	state = nextstate
+	PauseAllAudio()
 	if state == STATETITLE then title_setup()
+	elseif state == STATECRAFT then craft_setup()
 	else
 		print("unknown gamestate " .. state)
 	end
@@ -84,6 +106,7 @@ end
 
 function love.draw()
 	if state == STATETITLE then title_draw()
+	elseif state == STATECRAFT then craft_draw()
 	else
 		BeginPrint()
 		love.graphics.print("unknown gamestate " .. state, 400, 300)
@@ -97,6 +120,7 @@ function love.keyreleased(key)
 	end
 	
 	if state == STATETITLE then title_onkey(key)
+	elseif state == STATECRAFT then craft_onkey(key)
 	else
 		print("unknown gamestate " .. state)
 	end
@@ -104,6 +128,7 @@ end
 
 function love.update(dt)
 	if state == STATETITLE then title_update(dt)
+	elseif state == STATECRAFT then craft_update(dt)
 	else
 		print("unknown gamestate " .. state)
 	end
