@@ -125,8 +125,10 @@ MODDESC = {{"The BOX is a easy shape to furnish.", "The TRIANGLE blends standard
 	--------------------------------------------------
 	local p1place = 0
 	local p1data = {0,0,0,0,0}
+	local p1craftready = false
 	local p2place = 0
 	local p2data = {0,0,0,0,0}
+	local p2craftready = false
 	
 	function craft_setup()
 		p2place = 0
@@ -134,33 +136,40 @@ MODDESC = {{"The BOX is a easy shape to furnish.", "The TRIANGLE blends standard
 
 	local TEXTWIDTH = 300
 
-	function craft_draw_player(data,place,x,d,tx,align)
+	function craft_draw_player(ready,data,place,x,d,tx,align)
 		for i=0, 4 do
 			local y = 10+i*110
 			SetColor(data[i+1])
 			Draw(gfxbox, x, y)
+			if ready == false then
 			if place == i then
 				SetColor(mod3(data[place+1]-1))
 				Draw(gfxbox, x+d*110, y)
 				SetColor(mod3(data[place+1]+1))
 				Draw(gfxbox, x+d*110*2, y)
 			end
+		end
 			SetDefaultColor()
 		end
 		
 		BeginPrint()
-			love.graphics.printf(MODTITLES[place+1] .. ":", tx, 100, TEXTWIDTH, align)
-			love.graphics.printf(MODDESC[place+1][data[place+1]+1], tx, 120, TEXTWIDTH, align)
+			if ready then
+				love.graphics.printf(" < R E A D Y > ", tx, 500, TEXTWIDTH, "center")
+			else
+				love.graphics.printf(MODTITLES[place+1] .. ":", tx, 100, TEXTWIDTH, align)
+				love.graphics.printf(MODDESC[place+1][data[place+1]+1], tx, 120, TEXTWIDTH, align)
+			end
 		EndPrint()
 	end
 
 	function craft_draw()
-		craft_draw_player(p1data,p1place,10,1,120,"left")
-		craft_draw_player(p2data,p2place,690,-1,680-TEXTWIDTH,"right")
+		craft_draw_player(p1craftready, p1data,p1place,10,1,120,"left")
+		craft_draw_player(p2craftready, p2data,p2place,690,-1,680-TEXTWIDTH,"right")
 	end
 
 	function craft_onkey(key, down)
 		if down then
+			if p1craftready == false then
 			if key == p1up then
 				p1place = p1place - 1
 			end
@@ -179,7 +188,12 @@ MODDESC = {{"The BOX is a easy shape to furnish.", "The TRIANGLE blends standard
 			if key == p1right then
 				p1data[p1place+1] = mod3(p1data[p1place+1]+1)
 			end
+		end
+			if key == p1action then
+				p1craftready = not p1craftready
+			end
 			
+			if p2craftready == false then
 			if key == p2up then
 				p2place = p2place - 1
 			end
@@ -199,18 +213,44 @@ MODDESC = {{"The BOX is a easy shape to furnish.", "The TRIANGLE blends standard
 				p2data[p2place+1] = mod3(p2data[p2place+1]-1)
 			end
 		end
+			if key == p2action then
+				p2craftready = not p2craftready
+			end
+		end
 	end
 
 	function craft_update(dt)
+		if p1craftready and p2craftready then
+			SetState(STATEGAME)
+		end
 	end
 
 ---------------------------------------------------
+
+function game_setup()
+end
+	
+function game_draw()
+	BeginPrint()
+		Print("Let the games begin!", 400, 300)
+	EndPrint()
+end
+
+function game_onkey(key,down)
+end
+	
+function game_update(dt)
+end
+
+---------------------------------------------------
+
 
 function SetState(nextstate)
 	state = nextstate
 	PauseAllAudio()
 	if state == STATETITLE then title_setup()
 	elseif state == STATECRAFT then craft_setup()
+	elseif state == STATEGAME then game_setup()
 	else
 		print("unknown gamestate " .. state)
 	end
@@ -219,6 +259,7 @@ end
 function love.draw()
 	if state == STATETITLE then title_draw()
 	elseif state == STATECRAFT then craft_draw()
+	elseif state == STATEGAME then game_draw()
 	else
 		BeginPrint()
 		love.graphics.print("unknown gamestate " .. state, 400, 300)
@@ -230,6 +271,7 @@ function love.keypressed(key)
 	print("Key pressed " .. key)
 	if state == STATETITLE then title_onkey(key, true)
 	elseif state == STATECRAFT then craft_onkey(key, true)
+	elseif state == STATEGAME then game_onkey(key, true)
 	else
 		print("unknown gamestate " .. state)
 	end
@@ -244,6 +286,7 @@ function love.keyreleased(key)
 	
 	if state == STATETITLE then title_onkey(key, false)
 	elseif state == STATECRAFT then craft_onkey(key, false)
+	elseif state == STATEGAME then game_onkey(key,false)
 	else
 		print("unknown gamestate " .. state)
 	end
@@ -252,6 +295,7 @@ end
 function love.update(dt)
 	if state == STATETITLE then title_update(dt)
 	elseif state == STATECRAFT then craft_update(dt)
+	elseif state == STATEGAME then game_update(dt)
 	else
 		print("unknown gamestate " .. state)
 	end
