@@ -68,6 +68,15 @@ function RStat()
 end
 
 map = nil
+world = nil
+
+function addRect(x,y,w,h)
+	local xx = x + w/2
+	local yy = y + h/2
+	local body = love.physics.newBody(world,xx,yy,"static")
+	local shape = love.physics.newRectangleShape(w,h)
+	local fix = love.physics.newFixture(body, shape, 1)
+end
 
 function love.load()
 	love.mouse.setVisible(false)
@@ -82,6 +91,7 @@ function love.load()
 	map.useSpriteBatch = true
 	map.drawObjects = false
 	
+	world = love.physics.newWorld(0,0,false)
 	for tilename, tilelayer in pairs(map.tileLayers) do
 		print("Working on ", tilename, map.height, map.width, tilelayer)
 		if tilename == "col" then
@@ -91,7 +101,7 @@ function love.load()
 					if tile and tile ~= nil then 
 						--print(x,y, tilenumber)
 						local epsilon = 0.0
-						--local ctile = collider:addRectangle((x)* map.tileWidth, (y) * map.tileHeight, map.tileWidth-epsilon, map.tileHeight-epsilon)
+						local ctile = addRect((x)* map.tileWidth, (y) * map.tileHeight, map.tileWidth-epsilon, map.tileHeight-epsilon)
 						print("detected collision tile!")
 						--ctile.type = nil
 						--collider:addToGroup("tiles", ctile)
