@@ -158,6 +158,7 @@ state = STATENULL
 local gfxwhite = Img("assets/white.png")
 local gfxcircle = Img("assets/circle.png")
 local gfxbox = Img("assets/box.png")
+	local gfxpart = gfxbox
 local gfxtriangle = Img("assets/triangle.png")
 local gfxarrow = Img("assets/arrow.png")
 
@@ -432,6 +433,29 @@ function createworld()
 		end
 	end
 end
+	
+function Em(gfx, data, x, y)
+	local e = love.graphics.newParticleSystem(gfx, 400)
+	local r,g,b = 255,255,255
+	local c = data[2]
+	if c == 0 then
+		r,g,b = 255,0,0
+	end
+	if c == 1 then
+		r,g,b = 0,255,0
+	end
+	if c == 2 then
+		r,g,b = 0,0,255
+	end
+	e:setPosition(x,y)
+	e:setParticleLife(2.5,3)
+	e:setEmissionRate(40)
+	e:setSizes(0.1, 1)
+	e:setSpeed(1,10)
+	e:setSpread(2*math.pi)
+	e:setColors(r,g,b,255,r,g,b,0)
+	return e
+end
 
 function game_setup()
 	p1maxhealth = SetupMaxHealth(p1data)
@@ -440,10 +464,14 @@ function game_setup()
 	p1direction = 6
 	p1health = p1maxhealth
 	p1hasaction = 0
+	p1em = Em(gfxpart, p1data, p1body:getPosition())
+	p1em:start()
 	
 	p2direction = 4
 	p2health = p2maxhealth
 	p2hasaction = 0
+	p2em = Em(gfxpart, p2data, p2body:getPosition())
+	p2em:start()
 	
 	donetimer = 0
 end
@@ -511,10 +539,10 @@ function gamedrawship(body, data, health, maxhealth)
 			SetDefaultColor()
 		end
 	
-			local barx,bary = x-12,y+12
-			if outside then
-				barx,bary = Withinx(x+12)-24,Withiny(y-12)+24
-			end
+		local barx,bary = x-12,y+12
+		if outside then
+			barx,bary = Withinx(x+12)-24,Withiny(y-12)+24
+		end
 		SetDefaultColor()
 		love.graphics.rectangle("fill", barx, bary, 24, 3)
 		SetColor(data[2])
@@ -528,7 +556,9 @@ function game_draw()
 	BeginPrint()
 		Print(tostring(donetimer), 100, 100)
 	EndPrint()
-			
+	
+	Draw(p1em)
+	Draw(p2em)
 	gamedrawship(p1body, p1data, p1health, p1maxhealth)
 	gamedrawship(p2body, p2data, p2health, p2maxhealth)
 end
@@ -597,14 +627,20 @@ function game_update(dt)
 	if p2body and isshipoutside(p2body) then
 		p2health = p2health - dt * RADIATION
 	end
+	if p1body then p1em:setPosition(p1body:getPosition()) end
+	if p2body then p2em:setPosition(p2body:getPosition()) end
+	p1em:update(dt)
+	p2em:update(dt)
 	world:update(dt)
 	if p1body and p1health < 0 then
 		p1body:destroy()
-			p1body = nil
+		p1body = nil
+		p1em:stop()
 	end
 	if p2body and p2health < 0 then
 		p2body:destroy()
-			p2body = nil
+		p2body = nil
+		p2em:stop()
 	end
 	
 	if p1body == nil or p2body==nil then
