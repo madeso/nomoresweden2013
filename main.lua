@@ -86,27 +86,6 @@ function RStat()
 	return math.random(3)-1
 end
 
-map = nil
-world = nil
-
-function addRect(x,y,w,h)
-	local xx = x + w/2
-	local yy = y + h/2
-	local body = love.physics.newBody(world,xx,yy,"static")
-	local shape = love.physics.newRectangleShape(w,h)
-	local fix = love.physics.newFixture(body, shape, 1)
-	fix:setFriction(FRICTION)
-end
-	
-function addShip(x,y)
-	local body = love.physics.newBody(world,x,y,"dynamic")
-	local shape = love.physics.newCircleShape(SHIPRADIUS)
-	local fix = love.physics.newFixture(body, shape, DENSITY)
-	fix:setRestitution(BOUNCY)
-	fix:setFriction(FRICTION)
-	return body
-end
-
 function love.load()
 	love.mouse.setVisible(false)
 	love.graphics.setFont(love.graphics.newFont("PressStart2P.ttf", 20))
@@ -116,35 +95,6 @@ function love.load()
 	
 	p1data = {RStat(),RStat(),RStat(),RStat(),RStat()}
 	p2data = {RStat(),RStat(),RStat(),RStat(),RStat()}
-	
-	map = ATL_Loader.load("world.tmx")
-	map.useSpriteBatch = true
-	map.drawObjects = false
-		
-	world = love.physics.newWorld(0,GRAVITY,false)
-		p1body = addShip(300, 30)
-		p2body = addShip(500, 30)
-	for tilename, tilelayer in pairs(map.tileLayers) do
-		print("Working on ", tilename, map.height, map.width, tilelayer)
-		if tilename == "col" then
-			for y=1,map.height do
-				for x=1,map.width do
-					local tile = tilelayer.tileData(x,y)
-					if tile and tile ~= nil then 
-						--print(x,y, tilenumber)
-						local epsilon = 0.0
-						local ctile = addRect((x)* map.tileWidth, (y) * map.tileHeight, map.tileWidth-epsilon, map.tileHeight-epsilon)
-						--print("detected collision tile!")
-						--ctile.type = nil
-						--collider:addToGroup("tiles", ctile)
-						--collider:setPassive(ctile)
-						--tiles[#self.tiles+1] = ctile
-						--added = added + 1
-					end
-				end
-			end
-		end
-	end
 end
 
 --------------------------------------------------
@@ -367,10 +317,61 @@ end
 ---------------------------------------------------
 p1hasaction = 0
 p2hasaction = 0
+			
+map = nil
+world = nil
+
+function addRect(x,y,w,h)
+	local xx = x + w/2
+	local yy = y + h/2
+	local body = love.physics.newBody(world,xx,yy,"static")
+	local shape = love.physics.newRectangleShape(w,h)
+	local fix = love.physics.newFixture(body, shape, 1)
+	fix:setFriction(FRICTION)
+end
+
+function addShip(x,y)
+	local body = love.physics.newBody(world,x,y,"dynamic")
+	local shape = love.physics.newCircleShape(SHIPRADIUS)
+	local fix = love.physics.newFixture(body, shape, DENSITY)
+	fix:setRestitution(BOUNCY)
+	fix:setFriction(FRICTION)
+	return body
+end
+
+function createworld()
+	map = ATL_Loader.load("world.tmx")
+	map.useSpriteBatch = true
+	map.drawObjects = false
+
+	world = love.physics.newWorld(0,GRAVITY,false)
+		p1body = addShip(300, 30)
+		p2body = addShip(500, 30)
+	for tilename, tilelayer in pairs(map.tileLayers) do
+		print("Working on ", tilename, map.height, map.width, tilelayer)
+		if tilename == "col" then
+			for y=1,map.height do
+				for x=1,map.width do
+					local tile = tilelayer.tileData(x,y)
+					if tile and tile ~= nil then 
+						--print(x,y, tilenumber)
+						local epsilon = 0.0
+						local ctile = addRect((x)* map.tileWidth, (y) * map.tileHeight, map.tileWidth-epsilon, map.tileHeight-epsilon)
+						--print("detected collision tile!")
+						--ctile.type = nil
+						--collider:addToGroup("tiles", ctile)
+						--collider:setPassive(ctile)
+						--tiles[#self.tiles+1] = ctile
+						--added = added + 1
+					end
+				end
+			end
+		end
+	end
+end
 
 function game_setup()
-	p1body:setPosition(200, 50)
-	p1body:setPosition(400, 50)
+	createworld()
 	p1direction = 6
 	p1health = MAXHEALTH
 	p1hasaction = 0
@@ -543,6 +544,9 @@ function game_update(dt)
 				statstate = 1
 			end
 			SetState(STATESTAT)
+					world:destroy()
+					world = nil
+					map = nil
 		end
 	end
 end
