@@ -556,8 +556,8 @@ function addBullet(x,y,dir,data)
 	local body = love.physics.newBody(world,x+dx*DISP,y+dy*DISP,"dynamic")
 	shape = love.physics.newCircleShape(2)
 	local fix = love.physics.newFixture(body, shape, 50)
-	fix:setRestitution(BOUNCY)
-	fix:setFriction(FRICTION)
+	fix:setRestitution(0.5)
+	fix:setFriction(0.5)
 	body:setBullet(true)
 			
 	local weapon = data[4]
@@ -566,8 +566,8 @@ function addBullet(x,y,dir,data)
 	local bullet = {}
 	bullet.gfx = gfxbullet
 	bullet.maxlife = rsel(weapon, 2, 3, 5)
-	bullet.bangsize = rsel(weapon, 100, 400, 30)
-	bullet.damage = rsel(weapon, 0.5, 2, 1.5)
+	bullet.bangsize = rsel(weapon, 100, 400, 200)
+	bullet.damage = rsel(weapon, 0.5, 2, 0.1)
 	bullet.sfx = rsel(weapon, sfxrocket,sfxnuke,sfxgrenade)
 	bullet.body = body
 	bullet.life = 0
