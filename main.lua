@@ -10,6 +10,7 @@ METERS = 10
 GRAVITY = 35
 BOUNCY = 0.4
 FRICTION = 0.5
+DONETIME = 3
 
 MINX = -SHIPRADIUS
 MINY = -SHIPRADIUS
@@ -377,6 +378,8 @@ function game_setup()
 	p2direction = 4
 	p2health = MAXHEALTH
 	p2hasaction = 0
+	
+		donetimer = 0
 end
 	
 function Within(mi, v, ma)
@@ -452,7 +455,7 @@ end
 function game_draw()
 	map:draw()
 	BeginPrint()
-		Print(tostring(p1direction) .. "-" .. tostring(p1hasaction), 100, 100)
+		Print(tostring(donetimer), 100, 100)
 	EndPrint()
 			
 	gamedrawship(p1body, p1data, p1health)
@@ -532,6 +535,43 @@ function game_update(dt)
 		p2body:destroy()
 			p2body = nil
 	end
+	
+	if p1body == nil or p2body==nil then
+		donetimer = donetimer + dt
+		if donetimer > DONETIME then
+			if p1body == nil and p2body==nil then
+				statstate = 0
+			elseif p1body == nil then
+				statstate = 2
+			else
+				statstate = 1
+			end
+			SetState(STATESTAT)
+		end
+	end
+end
+	
+---------------------------------------------------
+
+function stat_setup()
+end
+	
+function stat_draw()
+	if statstate == 0 then
+		Print("Draw", 100,100)
+	elseif statstate == 1 then
+		Print("Player 1 wins", 100,100)
+	elseif statstate == 2 then
+		Print("Player 2 wins", 100,100)
+	else
+		Print("Unknown statstate " .. tostring(statstate), 100,100)
+	end
+end
+	
+function stat_onkey(key,down)
+end
+	
+function stat_update(dt)
 end
 
 ---------------------------------------------------
@@ -543,6 +583,7 @@ function SetState(nextstate)
 	if state == STATETITLE then title_setup()
 	elseif state == STATECRAFT then craft_setup()
 	elseif state == STATEGAME then game_setup()
+	elseif state == STATESTAT then stat_setup()
 	else
 		print("unknown gamestate " .. state)
 	end
@@ -552,6 +593,7 @@ function love.draw()
 	if state == STATETITLE then title_draw()
 	elseif state == STATECRAFT then craft_draw()
 	elseif state == STATEGAME then game_draw()
+	elseif state == STATESTAT then stat_draw()
 	else
 		BeginPrint()
 		love.graphics.print("unknown gamestate " .. state, 400, 300)
@@ -571,6 +613,7 @@ function onkey(key, down)
 	if state == STATETITLE then title_onkey(key, down)
 	elseif state == STATECRAFT then craft_onkey(key, down)
 	elseif state == STATEGAME then game_onkey(key, down)
+	elseif state == STATESTAT then stat_onkey(key,down)
 	else
 		print("unknown gamestate " .. state)
 	end
@@ -640,6 +683,7 @@ function love.update(dt)
 	if state == STATETITLE then title_update(dt)
 	elseif state == STATECRAFT then craft_update(dt)
 	elseif state == STATEGAME then game_update(dt)
+	elseif state == STATESTAT then stat_update(dt)
 	else
 		print("unknown gamestate " .. state)
 	end
