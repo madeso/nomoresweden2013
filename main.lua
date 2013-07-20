@@ -11,6 +11,7 @@ BOUNCY = 0.4
 FRICTION = 0.5
 DONETIME = 3
 SUCKYENGINE = 0.5
+MAXBANGLIFE = 0.5
 
 MINX = -SHIPRADIUS
 MINY = -SHIPRADIUS
@@ -103,6 +104,20 @@ end
 
 function SetDefaultColor()
 	love.graphics.setColor(255, 255, 255)
+end
+
+function RGB(c)
+	local r,g,b = 255,255,255
+	if c == 0 then
+		r,g,b = 255,0,0
+	end
+	if c == 1 then
+		r,g,b = 0,255,0
+	end
+	if c == 2 then
+		r,g,b = 0,0,255
+	end
+	return r,g,b
 end
 
 function SetColor(v)
@@ -404,6 +419,16 @@ function addShip(x,y, data)
 	return body
 end
 
+function rsel(v, a, b, c)
+	if v == 0 then
+		return a
+	end
+	if v == 1 then
+		return b
+	end
+	return c
+end
+
 function addBullet(x,y,dir,data)
 	BULLETIMPULSE = 1000
 	DISP = 10
@@ -429,15 +454,38 @@ function addBullet(x,y,dir,data)
 	local fix = love.physics.newFixture(body, shape, 50)
 	fix:setRestitution(BOUNCY)
 	fix:setFriction(FRICTION)
-			body:setBullet(true)
+	body:setBullet(true)
+			
+	local weapon = data[4]
 	
 	body:applyLinearImpulse(dx*BULLETIMPULSE,dy*BULLETIMPULSE)
 	local bullet = {}
+	bullet.gfx = gfxbullet
+	bullet.maxlife = rsel(weapon, 2, 3, 5)
+	bullet.bangsize = rsel(weapon, 100, 400, 15)
+	bullet.damage = rsel(weapon, 0.1, 2, 0.5)
+	bullet.reload = rsel(weapon, 2, 5, 0.1)
 	bullet.body = body
 	bullet.life = 0
+	bullet.color = data[2]
 	table.insert(objects,bullet)
 end
-
+	
+function addBang(bullet)
+	local x,y = bullet.body:getPosition()
+	local size = bullet.bangsize
+	local dmg = bullet.dmg
+		
+	local b = {}
+	b.x = x
+	b.y = y
+	b.size = size
+	b.life = 0
+	b.dmg = dmg
+	b.color = bullet.color
+	table.insert(bangs, b)
+end
+	
 function createworld()
 	map = ATL_Loader.load("world.tmx")
 	map.useSpriteBatch = true
@@ -471,17 +519,7 @@ end
 	
 function Em(gfx, data, x, y)
 	local e = love.graphics.newParticleSystem(gfx, 400)
-	local r,g,b = 255,255,255
-	local c = data[2]
-	if c == 0 then
-		r,g,b = 255,0,0
-	end
-	if c == 1 then
-		r,g,b = 0,255,0
-	end
-	if c == 2 then
-		r,g,b = 0,0,255
-	end
+	local r,g,b = RGB(data[2])
 	e:setPosition(x,y)
 	e:setParticleLife(2.5,3)
 	e:setEmissionRate(40)
@@ -510,6 +548,7 @@ function game_setup()
 	
 	donetimer = 0
 	objects = {}
+	bangs = {}
 end
 	
 function Within(mi, v, ma)
@@ -598,7 +637,15 @@ function game_draw()
 	gamedrawship(p1body, p1data, p1health, p1maxhealth)
 	gamedrawship(p2body, p2data, p2health, p2maxhealth)
 	for i=1, #objects do
-		Draw(gfxbullet, objects[i].body:getPosition())
+		Draw(objects[i].gfx, objects[i].body:getPosition())
+	end
+	for i=1, #bangs do
+		local l = bangs[i].life/MAXBANGLIFE
+		local rad = bangs[i].size*l
+		local r,g,b = RGB(bangs[i].color)
+		love.graphics.setColor(r,g,b,255*(1-l))
+		love.graphics.circle("fill", bangs[i].x, bangs[i].y, rad)
+		SetDefaultColor()
 	end
 end
 
@@ -661,8 +708,30 @@ function game_update_ship(body, direction, hasaction, health,data)
 		end
 	end
 end
+
+function objects_remove_func(o)
+	if o.life > o.maxlife then
+		addBang(o)
+		o.body:destroy()
+		return true
+	end
+end
 	
+function bangs_remove_func(o)
+	if o.life > MAXBANGLIFE then
+		return true
+	end
+end
+
 function game_update(dt)
+	for i=1, #objects do
+		objects[i].life = objects[i].life + dt
+	end
+	remove_if(objects, objects_remove_func)
+	for i=1, #bangs do
+		bangs[i].life = bangs[i].life + dt
+	end
+	remove_if(bangs, bangs_remove_func)
 	game_update_ship(p1body, p1direction, p1hasaction, p1health, p1data)
 	game_update_ship(p2body, p2direction, p2hasaction, p2health, p2data)
 	if p1body and isshipoutside(p1body) then
