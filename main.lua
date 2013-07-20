@@ -239,11 +239,11 @@ function setgamepads()
 end
 
 function determinesuperkey(key)
-	if key == " " then
+	if key == "return" then
 		return 1
-	elseif key == "joy1.btn10" then
+	elseif key == "joy1.btn3" then
 		return 2
-	elseif key == "joy2.btn10" then
+	elseif key == "joy2.btn3" then
 		return 2
 	else
 		return 0
@@ -463,7 +463,7 @@ function addBullet(x,y,dir,data)
 	bullet.gfx = gfxbullet
 	bullet.maxlife = rsel(weapon, 2, 3, 5)
 	bullet.bangsize = rsel(weapon, 100, 400, 30)
-	bullet.damage = rsel(weapon, 0.1, 2, 0.5)
+	bullet.damage = rsel(weapon, 0.5, 2, 1.5)
 	bullet.reload = rsel(weapon, 2, 5, 0.1)
 	bullet.body = body
 	bullet.life = 0
