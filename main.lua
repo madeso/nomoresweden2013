@@ -17,7 +17,7 @@ MAXX = 800+SHIPRADIUS
 MAXY = 600+SHIPRADIUS
 
 MAXHEALTH = 1
-RADIATION = 1
+RADIATION = 0.2
 
 -- Aliases
 local Draw = love.graphics.draw
@@ -436,10 +436,14 @@ function gamedrawship(body, data, health)
 		Draw(gfxarrow, Withinx(x-10)+d, Withiny(y-10)+d, rotation * (math.pi/180), 1,1,d,d)
 	end
 	
+		local barx,bary = x-12,y+12
+		if outside then
+			barx,bary = Withinx(x+12)-24,Withiny(y-12)+24
+		end
 	SetDefaultColor()
-	love.graphics.rectangle("fill", x-12, y+12, 24, 3)
+	love.graphics.rectangle("fill", barx, bary, 24, 3)
 	SetColor(1)
-	love.graphics.rectangle("fill", x-12, y+12, 24*(health/MAXHEALTH), 3)
+	love.graphics.rectangle("fill", barx, bary, 24*(health/MAXHEALTH), 3)
 	SetDefaultColor()
 end
 	
