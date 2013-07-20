@@ -61,6 +61,20 @@ function Play(x)
 	love.audio.play(x)
 end
 
+function remove_if(list, func)
+	local toremove = {}
+	for i,item in ipairs(list) do
+		if func(item) then
+				table.insert(toremove, i)
+		end
+	end
+	local i = 0
+		while #toremove ~= 0 do
+		i = table.remove(toremove)
+		table.remove(list,i)
+	end
+end
+
 function Img(p)
 	local r
 	r = love.graphics.newImage(p)
