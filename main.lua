@@ -557,7 +557,7 @@ function onkey(key, down)
 				love.graphics.toggleFullscreen()
 		end
 	end
-	print("Key " .. key .. " changed to ".. tostring(down))
+	--print("Key " .. key .. " changed to ".. tostring(down))
 	if state == STATETITLE then title_onkey(key, down)
 	elseif state == STATECRAFT then craft_onkey(key, down)
 	elseif state == STATEGAME then game_onkey(key, down)
