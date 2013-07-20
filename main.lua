@@ -2,7 +2,9 @@ ATL_Loader = require("AdvTiledLoader.Loader")
 ATL_Loader.path = "assets/"
 
 SHIPRADIUS = 7
-FORCE = 500
+FORCE = 15000
+UPFORCE = 3*FORCE
+DOWNFORCE = FORCE/2
 DENSITY = 200
 METERS = 10
 GRAVITY = 35
@@ -84,6 +86,7 @@ function addRect(x,y,w,h)
 	local body = love.physics.newBody(world,xx,yy,"static")
 	local shape = love.physics.newRectangleShape(w,h)
 	local fix = love.physics.newFixture(body, shape, 1)
+	fix:setFriction(FRICTION)
 end
 	
 function addShip(x,y)
@@ -352,10 +355,15 @@ function craft_update(dt)
 end
 
 ---------------------------------------------------
-
+			p1hasaction = 0
+						p2hasaction = 0
 function game_setup()
 	p1body:setPosition(200, 50)
 	p1body:setPosition(400, 50)
+	p1direction = 6
+		p1hasaction = 0
+	p2direction = 4
+		p2hasaction = 0
 end
 	
 function gamedrawship(body, data)
@@ -366,28 +374,40 @@ end
 function game_draw()
 	map:draw()
 	BeginPrint()
-		Print("Let the games begin!", 400, 300)
+		Print(tostring(p1direction) .. "-" .. tostring(p1hasaction), 100, 100)
 	EndPrint()
 			
 	gamedrawship(p1body, p1data)
 	gamedrawship(p2body, p2data)
 end
 
-function game_onkey_ship(body, key, down, left, right, up, down)
-	if down then
+function b2i(b)
+	if b then
+		return 1
+	else
+		return -1
+	end
+end
+
+function game_onkey_ship(body, key, isdown, left, right, up, down, direction, hasaction)
 		if key == left then
-			body:applyLinearImpulse(-FORCE,0)
+			if isdown then direction = 4 end
+			hasaction = hasaction + b2i(isdown)
 		end
 		if key == right then
-			body:applyLinearImpulse(FORCE,0)
+			if isdown then direction = 6 end
+			hasaction = hasaction + b2i(isdown)
 		end
 		if key == up then
-			body:applyLinearImpulse(0,-FORCE)
+			if isdown then direction = 8 end
+			hasaction = hasaction + b2i(isdown)
 		end
 		if key == down then
-			body:applyLinearImpulse(0,FORCE)
+			if isdown then direction = 2 end
+			hasaction = hasaction + b2i(isdown)
 		end
-	end
+	
+		return direction, hasaction
 end
 
 function game_onkey(key,down)
@@ -395,11 +415,30 @@ function game_onkey(key,down)
 		SetState(STATETITLE)
 	end
 	
-	game_onkey_ship(p1body, key, down, p1left, p1right, p1up, p1down)
-	game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down)
+	p1direction,p1hasaction = game_onkey_ship(p1body, key, down, p1left, p1right, p1up, p1down, p1direction, p1hasaction)
+	p2direction,p2hasaction = game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down, p2direction, p2hasaction)
+end
+	
+function game_update_ship(body, direction, hasaction)
+	if hasaction > 0 then
+		if direction == 4 then
+			body:applyForce(-FORCE,0)
+		end
+		if direction == 6 then
+			body:applyForce(FORCE,0)
+		end
+		if direction == 8 then
+			body:applyForce(0,-UPFORCE)
+		end
+		if direction == 2 then
+			body:applyForce(0,DOWNFORCE)
+		end
+	end
 end
 	
 function game_update(dt)
+	game_update_ship(p1body, p1direction, p1hasaction)
+	game_update_ship(p2body, p2direction, p2hasaction)
 	world:update(dt)
 end
 
