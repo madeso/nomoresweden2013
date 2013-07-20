@@ -158,7 +158,8 @@ state = STATENULL
 local gfxwhite = Img("assets/white.png")
 local gfxcircle = Img("assets/circle.png")
 local gfxbox = Img("assets/box.png")
-	local gfxpart = gfxbox
+local gfxpart = gfxbox
+local gfxbullet = Img("assets/bullet.png")
 local gfxtriangle = Img("assets/triangle.png")
 local gfxarrow = Img("assets/arrow.png")
 
@@ -403,14 +404,48 @@ function addShip(x,y, data)
 	return body
 end
 
+function addBullet(x,y,dir,data)
+	BULLETIMPULSE = 1000
+	DISP = 10
+	
+	local shape = nil
+	local hull = data[1]
+	local dx,dy = 0,0
+	if dir == 4 then
+		dx = -1
+	end
+	if dir == 6 then
+		dx = 1
+	end
+	if dir == 8 then
+		dy = -1
+	end
+	if dir == 2 then
+		dy = 1
+	end
+	
+	local body = love.physics.newBody(world,x+dx*DISP,y+dy*DISP,"dynamic")
+	shape = love.physics.newCircleShape(2)
+	local fix = love.physics.newFixture(body, shape, 50)
+	fix:setRestitution(BOUNCY)
+	fix:setFriction(FRICTION)
+			body:setBullet(true)
+	
+	body:applyLinearImpulse(dx*BULLETIMPULSE,dy*BULLETIMPULSE)
+	local bullet = {}
+	bullet.body = body
+	bullet.life = 0
+	table.insert(objects,bullet)
+end
+
 function createworld()
 	map = ATL_Loader.load("world.tmx")
 	map.useSpriteBatch = true
 	map.drawObjects = false
 
 	world = love.physics.newWorld(0,GRAVITY,false)
-		p1body = addShip(300, 30, p1data)
-		p2body = addShip(500, 30, p2data)
+	p1body = addShip(300, 30, p1data)
+	p2body = addShip(500, 30, p2data)
 	for tilename, tilelayer in pairs(map.tileLayers) do
 		print("Working on ", tilename, map.height, map.width, tilelayer)
 		if tilename == "col" then
@@ -453,7 +488,7 @@ function Em(gfx, data, x, y)
 	e:setSizes(0.1, 1)
 	e:setSpeed(1,10)
 	e:setSpread(2*math.pi)
-	e:setColors(r,g,b,255,r,g,b,0)
+	e:setColors(r,g,b,100,r,g,b,0)
 	return e
 end
 
@@ -474,6 +509,7 @@ function game_setup()
 	p2em:start()
 	
 	donetimer = 0
+	objects = {}
 end
 	
 function Within(mi, v, ma)
@@ -561,6 +597,9 @@ function game_draw()
 	Draw(p2em)
 	gamedrawship(p1body, p1data, p1health, p1maxhealth)
 	gamedrawship(p2body, p2data, p2health, p2maxhealth)
+	for i=1, #objects do
+		Draw(gfxbullet, objects[i].body:getPosition())
+	end
 end
 
 function b2i(b)
@@ -571,7 +610,7 @@ function b2i(b)
 	end
 end
 
-function game_onkey_ship(body, key, isdown, left, right, up, down, direction, hasaction)
+function game_onkey_ship(body, key, isdown, left, right, up, down, action, data, direction, hasaction)
 		if key == left then
 			if isdown then direction = 4 end
 			hasaction = hasaction + b2i(isdown)
@@ -588,13 +627,18 @@ function game_onkey_ship(body, key, isdown, left, right, up, down, direction, ha
 			if isdown then direction = 2 end
 			hasaction = hasaction + b2i(isdown)
 		end
+		
+		if key == action and isdown then
+			local x,y = body:getPosition()
+			addBullet(x,y,direction,data)
+		end
 	
 		return direction, hasaction
 end
 
 function game_onkey(key,down)
-	p1direction,p1hasaction = game_onkey_ship(p1body, key, down, p1left, p1right, p1up, p1down, p1direction, p1hasaction)
-	p2direction,p2hasaction = game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down, p2direction, p2hasaction)
+	p1direction,p1hasaction = game_onkey_ship(p1body, key, down, p1left, p1right, p1up, p1down, p1action, p1data, p1direction, p1hasaction)
+	p2direction,p2hasaction = game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down, p2action, p2data, p2direction, p2hasaction)
 end
 	
 function game_update_ship(body, direction, hasaction, health,data)
