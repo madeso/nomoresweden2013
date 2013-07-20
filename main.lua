@@ -4,12 +4,17 @@ ATL_Loader.path = "assets/"
 SHIPRADIUS = 7
 FORCE = 15000
 UPFORCE = 3*FORCE
-DOWNFORCE = FORCE/2
+DOWNFORCE = FORCE
 DENSITY = 200
 METERS = 10
 GRAVITY = 35
 BOUNCY = 0.4
 FRICTION = 0.5
+
+MINX = -SHIPRADIUS
+MINY = -SHIPRADIUS
+MAXX = 800+SHIPRADIUS
+MAXY = 600+SHIPRADIUS
 
 -- Aliases
 local Draw = love.graphics.draw
@@ -153,6 +158,7 @@ state = STATENULL
 
 local gfxbox = Img("assets/box.png")
 local gfxcircle = Img("assets/circle.png")
+local gfxarrow = Img("assets/arrow.png")
 
 --------------------------------------------------
 
@@ -355,8 +361,9 @@ function craft_update(dt)
 end
 
 ---------------------------------------------------
-			p1hasaction = 0
-						p2hasaction = 0
+p1hasaction = 0
+p2hasaction = 0
+
 function game_setup()
 	p1body:setPosition(200, 50)
 	p1body:setPosition(400, 50)
@@ -366,9 +373,47 @@ function game_setup()
 		p2hasaction = 0
 end
 	
+function Within(mi, v, ma)
+	if v <= mi then
+		return mi
+	end
+	if v >= ma then
+		return ma
+	end
+	return v
+end
+	
+function Withinx(x)
+	return Within(5, x, 800-25)
+end
+	
+function Withiny(y)
+	return Within(5, y, 600-25)
+end
+	
 function gamedrawship(body, data)
 	local x, y = body:getPosition()
-	Draw(gfxcircle, x-SHIPRADIUS,y-SHIPRADIUS)
+	Draw(gfxcircle, x-10,y-10)
+	
+	local outside = false
+	local rotation = 0
+	if x < MINX then
+		rotation = 180
+		outside = true
+	elseif x > MAXX then
+		rotation = 0
+		outside = true
+	elseif y < MINY then
+		rotation = -90
+		outside = true
+	elseif y > MAXY then
+		rotation = 90
+		outside = true
+	end
+	if outside then
+		local d = 10
+		Draw(gfxarrow, Withinx(x-10)+d, Withiny(y-10)+d, rotation * (math.pi/180), 1,1,d,d)
+	end
 end
 	
 function game_draw()
