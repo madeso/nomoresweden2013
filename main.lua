@@ -5,7 +5,6 @@ SHIPRADIUS = 7
 FORCE = 15000
 UPFORCE = 3*FORCE
 DOWNFORCE = FORCE
-DENSITY = 200
 METERS = 10
 GRAVITY = 35
 BOUNCY = 0.4
@@ -19,6 +18,19 @@ MAXY = 600+SHIPRADIUS
 
 MAXHEALTH = 1
 RADIATION = 0.2
+	
+function Density(id)
+	if id == 0 then
+		-- wood
+		return 200
+	elseif id == 1 then
+		-- iron
+		return 400
+	else
+		-- glass
+		return 100
+	end
+end
 
 -- Aliases
 local Draw = love.graphics.draw
@@ -342,10 +354,10 @@ function addRect(x,y,w,h)
 	fix:setFriction(FRICTION)
 end
 
-function addShip(x,y)
+function addShip(x,y, data)
 	local body = love.physics.newBody(world,x,y,"dynamic")
 	local shape = love.physics.newCircleShape(SHIPRADIUS)
-	local fix = love.physics.newFixture(body, shape, DENSITY)
+	local fix = love.physics.newFixture(body, shape, Density(data[3]))
 	fix:setRestitution(BOUNCY)
 	fix:setFriction(FRICTION)
 	return body
@@ -357,8 +369,8 @@ function createworld()
 	map.drawObjects = false
 
 	world = love.physics.newWorld(0,GRAVITY,false)
-		p1body = addShip(300, 30)
-		p2body = addShip(500, 30)
+		p1body = addShip(300, 30, p1data)
+		p2body = addShip(500, 30, p2data)
 	for tilename, tilelayer in pairs(map.tileLayers) do
 		print("Working on ", tilename, map.height, map.width, tilelayer)
 		if tilename == "col" then
