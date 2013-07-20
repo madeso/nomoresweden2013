@@ -566,15 +566,16 @@ function addBullet(x,y,dir,data)
 	local bullet = {}
 	bullet.gfx = gfxbullet
 	bullet.maxlife = rsel(weapon, 2, 3, 5)
-	bullet.bangsize = rsel(weapon, 100, 400, 200)
-	bullet.damage = rsel(weapon, 0.5, 2, 0.1)
+	bullet.bangsize = rsel(weapon, 100, 500, 300)
+	bullet.damage = rsel(weapon, 4, 2, 0.01)
+	bullet.force = rsel(weapon, 100, 2000, 70000)
 	bullet.sfx = rsel(weapon, sfxrocket,sfxnuke,sfxgrenade)
 	bullet.body = body
 	bullet.life = 0
 	bullet.color = data[2]
 	table.insert(objects,bullet)
 	
-	return rsel(weapon, 2, 5, 0.1)
+	return rsel(weapon, 0.5, 5, 0.1)
 end
 	
 function addBang(bullet)
@@ -590,6 +591,7 @@ function addBang(bullet)
 	b.life = 0
 	b.dmg = dmg
 	b.color = bullet.color
+	b.force = bullet.force
 	table.insert(bangs, b)
 end
 	
@@ -602,7 +604,7 @@ function createworld()
 	p1body = addShip(300, 30, p1data)
 	p2body = addShip(500, 30, p2data)
 	for tilename, tilelayer in pairs(map.tileLayers) do
-		print("Working on ", tilename, map.height, map.width, tilelayer)
+		--print("Working on ", tilename, map.height, map.width, tilelayer)
 		if tilename == "col" then
 			for y=1,map.height do
 				for x=1,map.width do
@@ -832,8 +834,12 @@ function game_update_ship(body, direction, hasaction, health,data,dt,heat)
 			local dy = y - bangs[i].y
 			local l = math.sqrt(dx*dx+dy*dy)
 			if l < bangs[i].rad then
-				local tdmg = bangs[i].dmg*(1 - l/bangs[i].rad)*dt
+				local s = (1 - l/bangs[i].rad)
+				local tdmg = bangs[i].dmg*s*dt
 				health = health - tdmg
+				
+				local fscale = s*bangs[i].force/l
+				body:applyForce(dx*fscale,dy*fscale)
 			end
 		end
 	end
