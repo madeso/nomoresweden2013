@@ -85,6 +85,7 @@ end
 function Music(p)
 	local s
 	s = love.audio.newSource(p, "stream")
+		s:setLooping(true)
 	return s
 end
 
@@ -147,6 +148,8 @@ function RStat()
 end
 
 function love.load()
+	bgmusic = Music("assets/ChipChippy (loop).mp3")
+		Play(bgmusic)
 	love.mouse.setVisible(false)
 	love.graphics.setFont(love.graphics.newFont("PressStart2P.ttf", 20))
 	math.randomseed( tonumber(tostring(os.time()):reverse():sub(1,6)) )
@@ -917,7 +920,7 @@ end
 
 function SetState(nextstate)
 	state = nextstate
-	PauseAllAudio()
+	-- PauseAllAudio()
 	if state == STATETITLE then title_setup()
 	elseif state == STATECRAFT then craft_setup()
 	elseif state == STATEGAME then game_setup()
