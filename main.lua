@@ -492,10 +492,6 @@ function game_onkey_ship(body, key, isdown, left, right, up, down, direction, ha
 end
 
 function game_onkey(key,down)
-	if down==false and determinesuperkey(key)>0 then
-		SetState(STATETITLE)
-	end
-	
 	p1direction,p1hasaction = game_onkey_ship(p1body, key, down, p1left, p1right, p1up, p1down, p1direction, p1hasaction)
 	p2direction,p2hasaction = game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down, p2direction, p2hasaction)
 end
@@ -569,6 +565,9 @@ function stat_draw()
 end
 	
 function stat_onkey(key,down)
+	if down==false and determinesuperkey(key)>0 then
+		SetState(STATETITLE)
+	end
 end
 	
 function stat_update(dt)
