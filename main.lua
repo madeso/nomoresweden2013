@@ -442,8 +442,10 @@ function gamedrawship(body, data, health)
 		end
 	SetDefaultColor()
 	love.graphics.rectangle("fill", barx, bary, 24, 3)
-	SetColor(1)
-	love.graphics.rectangle("fill", barx, bary, 24*(health/MAXHEALTH), 3)
+	if health > 0 then
+		SetColor(1)
+		love.graphics.rectangle("fill", barx, bary, 24*(health/MAXHEALTH), 3)
+	end
 	SetDefaultColor()
 end
 	
@@ -495,8 +497,8 @@ function game_onkey(key,down)
 	p2direction,p2hasaction = game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down, p2direction, p2hasaction)
 end
 	
-function game_update_ship(body, direction, hasaction)
-	if hasaction > 0 then
+function game_update_ship(body, direction, hasaction, health)
+	if hasaction > 0 and health >= 0 then
 		if direction == 4 then
 			body:applyForce(-FORCE,0)
 		end
@@ -513,8 +515,8 @@ function game_update_ship(body, direction, hasaction)
 end
 	
 function game_update(dt)
-	game_update_ship(p1body, p1direction, p1hasaction)
-	game_update_ship(p2body, p2direction, p2hasaction)
+	game_update_ship(p1body, p1direction, p1hasaction, p1health)
+	game_update_ship(p2body, p2direction, p2hasaction, p2health)
 	if isshipoutside(p1body) then
 		p1health = p1health - dt * RADIATION
 	end
