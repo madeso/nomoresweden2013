@@ -2,8 +2,12 @@ ATL_Loader = require("AdvTiledLoader.Loader")
 ATL_Loader.path = "assets/"
 
 SHIPRADIUS = 7
-FORCE = 100
-DENSITY = 100
+FORCE = 500
+DENSITY = 200
+METERS = 10
+GRAVITY = 35
+BOUNCY = 0.4
+FRICTION = 0.5
 
 -- Aliases
 local Draw = love.graphics.draw
@@ -86,6 +90,8 @@ function addShip(x,y)
 	local body = love.physics.newBody(world,x,y,"dynamic")
 	local shape = love.physics.newCircleShape(SHIPRADIUS)
 	local fix = love.physics.newFixture(body, shape, DENSITY)
+	fix:setRestitution(BOUNCY)
+	fix:setFriction(FRICTION)
 	return body
 end
 
@@ -94,6 +100,7 @@ function love.load()
 	love.graphics.setFont(love.graphics.newFont("PressStart2P.ttf", 20))
 	math.randomseed( tonumber(tostring(os.time()):reverse():sub(1,6)) )
 	SetState(STATETITLE)
+	love.physics.setMeter(METERS)
 	
 	p1data = {RStat(),RStat(),RStat(),RStat(),RStat()}
 	p2data = {RStat(),RStat(),RStat(),RStat(),RStat()}
@@ -102,7 +109,7 @@ function love.load()
 	map.useSpriteBatch = true
 	map.drawObjects = false
 		
-	world = love.physics.newWorld(0,9,false)
+	world = love.physics.newWorld(0,GRAVITY,false)
 		p1body = addShip(300, 30)
 		p2body = addShip(500, 30)
 	for tilename, tilelayer in pairs(map.tileLayers) do
@@ -115,7 +122,7 @@ function love.load()
 						--print(x,y, tilenumber)
 						local epsilon = 0.0
 						local ctile = addRect((x)* map.tileWidth, (y) * map.tileHeight, map.tileWidth-epsilon, map.tileHeight-epsilon)
-						print("detected collision tile!")
+						--print("detected collision tile!")
 						--ctile.type = nil
 						--collider:addToGroup("tiles", ctile)
 						--collider:setPassive(ctile)
