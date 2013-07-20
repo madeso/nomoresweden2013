@@ -462,7 +462,7 @@ function addBullet(x,y,dir,data)
 	local bullet = {}
 	bullet.gfx = gfxbullet
 	bullet.maxlife = rsel(weapon, 2, 3, 5)
-	bullet.bangsize = rsel(weapon, 100, 400, 15)
+	bullet.bangsize = rsel(weapon, 100, 400, 30)
 	bullet.damage = rsel(weapon, 0.1, 2, 0.5)
 	bullet.reload = rsel(weapon, 2, 5, 0.1)
 	bullet.body = body
@@ -474,7 +474,7 @@ end
 function addBang(bullet)
 	local x,y = bullet.body:getPosition()
 	local size = bullet.bangsize
-	local dmg = bullet.dmg
+	local dmg = bullet.damage
 		
 	local b = {}
 	b.x = x
@@ -640,8 +640,8 @@ function game_draw()
 		Draw(objects[i].gfx, objects[i].body:getPosition())
 	end
 	for i=1, #bangs do
-		local l = bangs[i].life/MAXBANGLIFE
-		local rad = bangs[i].size*l
+		local l = bangs[i].l
+		local rad = bangs[i].rad
 		local r,g,b = RGB(bangs[i].color)
 		love.graphics.setColor(r,g,b,255*(1-l))
 		love.graphics.circle("fill", bangs[i].x, bangs[i].y, rad)
@@ -688,7 +688,7 @@ function game_onkey(key,down)
 	p2direction,p2hasaction = game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down, p2action, p2data, p2direction, p2hasaction)
 end
 	
-function game_update_ship(body, direction, hasaction, health,data)
+function game_update_ship(body, direction, hasaction, health,data,dt)
 	if hasaction > 0 and health >= 0 then
 		local enginepower = 1
 		if data[5] == 1 then
@@ -707,6 +707,19 @@ function game_update_ship(body, direction, hasaction, health,data)
 			body:applyForce(0,DOWNFORCE*enginepower)
 		end
 	end
+	if body then
+		local x,y = body:getPosition()
+		for i=1, #bangs do
+			local dx = x - bangs[i].x
+			local dy = y - bangs[i].y
+			local l = math.sqrt(dx*dx+dy*dy)
+			if l < bangs[i].rad then
+				local tdmg = bangs[i].dmg*(1 - l/bangs[i].rad)*dt
+				health = health - tdmg
+			end
+		end
+	end
+	return health
 end
 
 function objects_remove_func(o)
@@ -730,10 +743,15 @@ function game_update(dt)
 	remove_if(objects, objects_remove_func)
 	for i=1, #bangs do
 		bangs[i].life = bangs[i].life + dt
+		local l = bangs[i].life/MAXBANGLIFE
+		local rad = bangs[i].size*l
+		local r,g,b = RGB(bangs[i].color)
+		bangs[i].l = l
+		bangs[i].rad = rad
 	end
 	remove_if(bangs, bangs_remove_func)
-	game_update_ship(p1body, p1direction, p1hasaction, p1health, p1data)
-	game_update_ship(p2body, p2direction, p2hasaction, p2health, p2data)
+	p1health = game_update_ship(p1body, p1direction, p1hasaction, p1health, p1data,dt)
+	p2health = game_update_ship(p2body, p2direction, p2hasaction, p2health, p2data,dt)
 	if p1body and isshipoutside(p1body) then
 		p1health = p1health - dt * RADIATION
 	end
