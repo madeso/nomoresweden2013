@@ -464,11 +464,12 @@ function addBullet(x,y,dir,data)
 	bullet.maxlife = rsel(weapon, 2, 3, 5)
 	bullet.bangsize = rsel(weapon, 100, 400, 30)
 	bullet.damage = rsel(weapon, 0.5, 2, 1.5)
-	bullet.reload = rsel(weapon, 2, 5, 0.1)
 	bullet.body = body
 	bullet.life = 0
 	bullet.color = data[2]
 	table.insert(objects,bullet)
+	
+	return rsel(weapon, 2, 5, 0.1)
 end
 	
 function addBang(bullet)
@@ -549,6 +550,9 @@ function game_setup()
 	donetimer = 0
 	objects = {}
 	bangs = {}
+	
+	p1heat = 0
+	p2heat = 0
 end
 	
 function Within(mi, v, ma)
@@ -584,7 +588,7 @@ function isshipoutside(body)
 	end
 end
 
-function gamedrawship(body, data, health, maxhealth)
+function gamedrawship(body, data, health, maxhealth, heat)
 	if health > 0 then
 		local x, y = body:getPosition()
 		local a = body:getAngle()
@@ -622,6 +626,13 @@ function gamedrawship(body, data, health, maxhealth)
 		love.graphics.rectangle("fill", barx, bary, 24, 3)
 		SetColor(data[2])
 		love.graphics.rectangle("fill", barx, bary, 24*(health/maxhealth), 3)
+		if heat > 0 then
+			local hv = math.min(1, heat)
+			love.graphics.setColor(255,255,255,255)
+			love.graphics.rectangle("fill", barx, bary+5, 24, 3)
+			love.graphics.setColor(255,0,0,255)
+			love.graphics.rectangle("fill", barx, bary+5, 24*hv, 3)
+		end
 		SetDefaultColor()
 	end
 end
@@ -634,8 +645,8 @@ function game_draw()
 	
 	Draw(p1em)
 	Draw(p2em)
-	gamedrawship(p1body, p1data, p1health, p1maxhealth)
-	gamedrawship(p2body, p2data, p2health, p2maxhealth)
+	gamedrawship(p1body, p1data, p1health, p1maxhealth, p1heat)
+	gamedrawship(p2body, p2data, p2health, p2maxhealth, p2heat)
 	for i=1, #objects do
 		Draw(objects[i].gfx, objects[i].body:getPosition())
 	end
@@ -657,7 +668,7 @@ function b2i(b)
 	end
 end
 
-function game_onkey_ship(body, key, isdown, left, right, up, down, action, data, direction, hasaction)
+function game_onkey_ship(body, key, isdown, left, right, up, down, action, data, direction, hasaction, heat)
 		if key == left then
 			if isdown then direction = 4 end
 			hasaction = hasaction + b2i(isdown)
@@ -675,20 +686,20 @@ function game_onkey_ship(body, key, isdown, left, right, up, down, action, data,
 			hasaction = hasaction + b2i(isdown)
 		end
 		
-		if key == action and isdown then
+		if key == action and isdown and heat <= 1 then
 			local x,y = body:getPosition()
-			addBullet(x,y,direction,data)
+			heat = heat + addBullet(x,y,direction,data)
 		end
 	
-		return direction, hasaction
+		return direction, hasaction, heat
 end
 
 function game_onkey(key,down)
-	p1direction,p1hasaction = game_onkey_ship(p1body, key, down, p1left, p1right, p1up, p1down, p1action, p1data, p1direction, p1hasaction)
-	p2direction,p2hasaction = game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down, p2action, p2data, p2direction, p2hasaction)
+	p1direction,p1hasaction,p1heat = game_onkey_ship(p1body, key, down, p1left, p1right, p1up, p1down, p1action, p1data, p1direction, p1hasaction,p1heat)
+	p2direction,p2hasaction,p2heat = game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down, p2action, p2data, p2direction, p2hasaction,p2heat)
 end
 	
-function game_update_ship(body, direction, hasaction, health,data,dt)
+function game_update_ship(body, direction, hasaction, health,data,dt,heat)
 	if hasaction > 0 and health >= 0 then
 		local enginepower = 1
 		if data[5] == 1 then
@@ -719,7 +730,14 @@ function game_update_ship(body, direction, hasaction, health,data,dt)
 			end
 		end
 	end
-	return health
+	if heat > 0 then
+		local release = 1
+		if data[5] == 2 then
+			release = 0.5
+		end
+		heat = heat - dt*release
+	end
+	return health, heat
 end
 
 function objects_remove_func(o)
@@ -750,8 +768,8 @@ function game_update(dt)
 		bangs[i].rad = rad
 	end
 	remove_if(bangs, bangs_remove_func)
-	p1health = game_update_ship(p1body, p1direction, p1hasaction, p1health, p1data,dt)
-	p2health = game_update_ship(p2body, p2direction, p2hasaction, p2health, p2data,dt)
+	p1health,p1heat = game_update_ship(p1body, p1direction, p1hasaction, p1health, p1data,dt,p1heat)
+	p2health,p2heat = game_update_ship(p2body, p2direction, p2hasaction, p2health, p2data,dt,p2heat)
 	if p1body and isshipoutside(p1body) then
 		p1health = p1health - dt * RADIATION
 	end
