@@ -10,6 +10,7 @@ GRAVITY = 35
 BOUNCY = 0.4
 FRICTION = 0.5
 DONETIME = 3
+SUCKYENGINE = 0.5
 
 MINX = -SHIPRADIUS
 MINY = -SHIPRADIUS
@@ -29,6 +30,24 @@ function Density(id)
 	else
 		-- glass
 		return 100
+	end
+end
+	
+function SetupMaxHealth(data)
+	local hull = data[3]
+	local weakness = 1
+	if data[5] == 1 then
+		weakness = 0.5
+	end
+	if hull == 0 then
+		-- wood
+		return 2*weakness
+	elseif hull == 1 then
+		-- iron
+		return 4*weakness
+	else
+		-- glass
+		return 1*weakness
 	end
 end
 
@@ -395,16 +414,18 @@ function createworld()
 end
 
 function game_setup()
+	p1maxhealth = SetupMaxHealth(p1data)
+	p2maxhealth = SetupMaxHealth(p2data)
 	createworld()
 	p1direction = 6
-	p1health = MAXHEALTH
+	p1health = p1maxhealth
 	p1hasaction = 0
 	
 	p2direction = 4
-	p2health = MAXHEALTH
+	p2health = p2maxhealth
 	p2hasaction = 0
 	
-		donetimer = 0
+	donetimer = 0
 end
 	
 function Within(mi, v, ma)
@@ -440,7 +461,7 @@ function isshipoutside(body)
 	end
 end
 
-function gamedrawship(body, data, health)
+function gamedrawship(body, data, health, maxhealth)
 	if health > 0 then
 		local x, y = body:getPosition()
 		local a = body:getAngle()
@@ -477,7 +498,7 @@ function gamedrawship(body, data, health)
 		SetDefaultColor()
 		love.graphics.rectangle("fill", barx, bary, 24, 3)
 		SetColor(data[2])
-		love.graphics.rectangle("fill", barx, bary, 24*(health/MAXHEALTH), 3)
+		love.graphics.rectangle("fill", barx, bary, 24*(health/maxhealth), 3)
 		SetDefaultColor()
 	end
 end
@@ -488,8 +509,8 @@ function game_draw()
 		Print(tostring(donetimer), 100, 100)
 	EndPrint()
 			
-	gamedrawship(p1body, p1data, p1health)
-	gamedrawship(p2body, p2data, p2health)
+	gamedrawship(p1body, p1data, p1health, p1maxhealth)
+	gamedrawship(p2body, p2data, p2health, p2maxhealth)
 end
 
 function b2i(b)
@@ -526,26 +547,30 @@ function game_onkey(key,down)
 	p2direction,p2hasaction = game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down, p2direction, p2hasaction)
 end
 	
-function game_update_ship(body, direction, hasaction, health)
+function game_update_ship(body, direction, hasaction, health,data)
 	if hasaction > 0 and health >= 0 then
+		local enginepower = 1
+		if data[5] == 1 then
+			enginepower = SUCKYENGINE
+		end
 		if direction == 4 then
-			body:applyForce(-FORCE,0)
+			body:applyForce(-FORCE*enginepower,0)
 		end
 		if direction == 6 then
-			body:applyForce(FORCE,0)
+			body:applyForce(FORCE*enginepower,0)
 		end
 		if direction == 8 then
-			body:applyForce(0,-UPFORCE)
+			body:applyForce(0,-UPFORCE*enginepower)
 		end
 		if direction == 2 then
-			body:applyForce(0,DOWNFORCE)
+			body:applyForce(0,DOWNFORCE*enginepower)
 		end
 	end
 end
 	
 function game_update(dt)
-	game_update_ship(p1body, p1direction, p1hasaction, p1health)
-	game_update_ship(p2body, p2direction, p2hasaction, p2health)
+	game_update_ship(p1body, p1direction, p1hasaction, p1health, p1data)
+	game_update_ship(p2body, p2direction, p2hasaction, p2health, p2data)
 	if p1body and isshipoutside(p1body) then
 		p1health = p1health - dt * RADIATION
 	end
