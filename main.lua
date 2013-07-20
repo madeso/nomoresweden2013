@@ -85,7 +85,8 @@ end
 function Music(p)
 	local s
 	s = love.audio.newSource(p, "stream")
-		s:setLooping(true)
+	s:setLooping(true)
+	s:setVolume(0.5)
 	return s
 end
 
@@ -171,6 +172,20 @@ STATESTATE = 6
 
 
 state = STATENULL
+
+-------------------
+
+local sfxgui = Sfx("sfx/gui.wav")
+local sfxselect = Sfx("sfx/select.wav")
+local sfxenter = Sfx("sfx/enter.wav")
+	
+local sfxshoot = Sfx("sfx/shoot.wav")
+local sfxdie = Sfx("sfx/die.wav")
+
+local sfxgrenade = Sfx("sfx/grenade.wav")
+local sfxrocket = Sfx("sfx/rocket.wav")
+local sfxnuke = Sfx("sfx/nuke.wav")
+
 --------------------------------------------------
 
 local gfxwhite = Img("assets/white.png")
@@ -387,12 +402,12 @@ function craft_draw_player(ready,data,place,x,d,tx,align)
 		local y = 10+i*110
 		Draw(GfxCraft(i, data[i+1]), x, y)
 		if ready == false then
-		if place == i then
-			Draw(GfxCraft(i, mod3(data[place+1]-1)), x+d*110, y)
-			Draw(GfxCraft(i, mod3(data[place+1]+1)), x+d*110*2, y)
+			if place == i then
+				Draw(GfxCraft(i, mod3(data[place+1]-1)), x+d*110, y)
+				Draw(GfxCraft(i, mod3(data[place+1]+1)), x+d*110*2, y)
+			end
 		end
 	end
-end
 	
 	BeginPrint()
 	if ready then
@@ -412,51 +427,61 @@ end
 function craft_onkey(key, down)
 	if down then
 		if p1craftready == false then
-		if key == p1up then
-			p1place = p1place - 1
+			if key == p1up then
+				p1place = p1place - 1
+				Play(sfxgui)
+			end
+			if key == p1down then
+				p1place = p1place + 1
+					Play(sfxgui)
+			end
+			if p1place == -1 then
+				p1place = 4
+			end
+			if p1place == 5 then
+				p1place = 0
+			end
+			if key == p1left then
+				p1data[p1place+1] = mod3(p1data[p1place+1]-1)
+				Play(sfxselect)
+			end
+			if key == p1right then
+				p1data[p1place+1] = mod3(p1data[p1place+1]+1)
+				Play(sfxselect)
+			end
 		end
-		if key == p1down then
-			p1place = p1place + 1
-		end
-		if p1place == -1 then
-			p1place = 4
-		end
-		if p1place == 5 then
-			p1place = 0
-		end
-		if key == p1left then
-			p1data[p1place+1] = mod3(p1data[p1place+1]-1)
-		end
-		if key == p1right then
-			p1data[p1place+1] = mod3(p1data[p1place+1]+1)
-		end
-	end
 		if key == p1action then
 			p1craftready = not p1craftready
+			Play(sfxenter)
 		end
 		
 		if p2craftready == false then
-		if key == p2up then
-			p2place = p2place - 1
+			if key == p2up then
+				p2place = p2place - 1
+				Play(sfxgui)
+			end
+			if key == p2down then
+				p2place = p2place + 1
+				Play(sfxgui)
+			end
+			if p2place == -1 then
+				p2place = 4
+			end
+			if p2place == 5 then
+				p2place = 0
+			end
+			if key == p2left then
+				p2data[p2place+1] = mod3(p2data[p2place+1]+1)
+				Play(sfxselect)
+			end
+			if key == p2right then
+				p2data[p2place+1] = mod3(p2data[p2place+1]-1)
+				Play(sfxselect)
+			end
 		end
-		if key == p2down then
-			p2place = p2place + 1
-		end
-		if p2place == -1 then
-			p2place = 4
-		end
-		if p2place == 5 then
-			p2place = 0
-		end
-		if key == p2left then
-			p2data[p2place+1] = mod3(p2data[p2place+1]+1)
-		end
-		if key == p2right then
-			p2data[p2place+1] = mod3(p2data[p2place+1]-1)
-		end
-	end
 		if key == p2action then
 			p2craftready = not p2craftready
+				Play(sfxenter)
 		end
 	end
 end
@@ -543,6 +568,7 @@ function addBullet(x,y,dir,data)
 	bullet.maxlife = rsel(weapon, 2, 3, 5)
 	bullet.bangsize = rsel(weapon, 100, 400, 30)
 	bullet.damage = rsel(weapon, 0.5, 2, 1.5)
+	bullet.sfx = rsel(weapon, sfxrocket,sfxnuke,sfxgrenade)
 	bullet.body = body
 	bullet.life = 0
 	bullet.color = data[2]
@@ -552,6 +578,7 @@ function addBullet(x,y,dir,data)
 end
 	
 function addBang(bullet)
+	Play(bullet.sfx)
 	local x,y = bullet.body:getPosition()
 	local size = bullet.bangsize
 	local dmg = bullet.damage
@@ -768,6 +795,7 @@ function game_onkey_ship(body, key, isdown, left, right, up, down, action, data,
 		if key == action and isdown and heat <= 1 then
 			local x,y = body:getPosition()
 			heat = heat + addBullet(x,y,direction,data)
+			Play(sfxshoot)
 		end
 	
 		return direction, hasaction, heat
@@ -863,11 +891,13 @@ function game_update(dt)
 	if p1body and p1health < 0 then
 		p1body:destroy()
 		p1body = nil
+		Play(sfxdie)
 		p1em:stop()
 	end
 	if p2body and p2health < 0 then
 		p2body:destroy()
 		p2body = nil
+		Play(sfxdie)
 		p2em:stop()
 	end
 	
