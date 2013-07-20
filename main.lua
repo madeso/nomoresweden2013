@@ -16,6 +16,9 @@ MINY = -SHIPRADIUS
 MAXX = 800+SHIPRADIUS
 MAXY = 600+SHIPRADIUS
 
+MAXHEALTH = 1
+RADIATION = 1
+
 -- Aliases
 local Draw = love.graphics.draw
 local PauseAllAudio = love.audio.pause
@@ -368,9 +371,12 @@ function game_setup()
 	p1body:setPosition(200, 50)
 	p1body:setPosition(400, 50)
 	p1direction = 6
-		p1hasaction = 0
+	p1health = MAXHEALTH
+	p1hasaction = 0
+	
 	p2direction = 4
-		p2hasaction = 0
+	p2health = MAXHEALTH
+	p2hasaction = 0
 end
 	
 function Within(mi, v, ma)
@@ -378,7 +384,7 @@ function Within(mi, v, ma)
 		return mi
 	end
 	if v >= ma then
-		return ma
+		return math.pi
 	end
 	return v
 end
@@ -390,8 +396,23 @@ end
 function Withiny(y)
 	return Within(5, y, 600-25)
 end
-	
-function gamedrawship(body, data)
+
+function isshipoutside(body)
+	local x, y = body:getPosition()
+	if x < MINX then
+		return true
+	elseif x > MAXX then
+		return true
+	elseif y < MINY then
+		return true
+	elseif y > MAXY then
+		return true
+	else
+		return false
+	end
+end
+
+function gamedrawship(body, data, health)
 	local x, y = body:getPosition()
 	Draw(gfxcircle, x-10,y-10)
 	
@@ -414,6 +435,12 @@ function gamedrawship(body, data)
 		local d = 10
 		Draw(gfxarrow, Withinx(x-10)+d, Withiny(y-10)+d, rotation * (math.pi/180), 1,1,d,d)
 	end
+	
+	SetDefaultColor()
+	love.graphics.rectangle("fill", x-12, y+12, 24, 3)
+	SetColor(1)
+	love.graphics.rectangle("fill", x-12, y+12, 24*(health/MAXHEALTH), 3)
+	SetDefaultColor()
 end
 	
 function game_draw()
@@ -422,8 +449,8 @@ function game_draw()
 		Print(tostring(p1direction) .. "-" .. tostring(p1hasaction), 100, 100)
 	EndPrint()
 			
-	gamedrawship(p1body, p1data)
-	gamedrawship(p2body, p2data)
+	gamedrawship(p1body, p1data, p1health)
+	gamedrawship(p2body, p2data, p2health)
 end
 
 function b2i(b)
@@ -484,6 +511,12 @@ end
 function game_update(dt)
 	game_update_ship(p1body, p1direction, p1hasaction)
 	game_update_ship(p2body, p2direction, p2hasaction)
+	if isshipoutside(p1body) then
+		p1health = p1health - dt * RADIATION
+	end
+	if isshipoutside(p2body) then
+		p2health = p2health - dt * RADIATION
+	end
 	world:update(dt)
 end
 
