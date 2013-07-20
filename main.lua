@@ -431,8 +431,9 @@ end
 function gamedrawship(body, data, health)
 	if health > 0 then
 		local x, y = body:getPosition()
+		local a = body:getAngle()
 		SetColor(data[2])
-		Draw(Shipgfx(data[1]), x-10,y-10)
+		Draw(Shipgfx(data[1]), x,y,a,1,1,10,10)
 		SetDefaultColor()
 	
 		local outside = false
