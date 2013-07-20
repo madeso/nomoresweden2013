@@ -178,6 +178,85 @@ local gfxbullet = Img("assets/bullet.png")
 local gfxtriangle = Img("assets/triangle.png")
 local gfxarrow = Img("assets/arrow.png")
 
+local gfxcraftbox = Img("assets/craft/box.png")
+local gfxcrafttri = Img("assets/craft/tri.png")
+local gfxcraftcircle = Img("assets/craft/circle.png")
+	
+local gfxcraftred = Img("assets/craft/red.png")
+local gfxcraftgreen = Img("assets/craft/green.png")
+local gfxcraftblue = Img("assets/craft/blue.png")
+	
+local gfxcraftwood = Img("assets/craft/wood.png")
+local gfxcraftiron = Img("assets/craft/iron.png")
+local gfxcraftglass = Img("assets/craft/glass.png")
+	
+local gfxcraftrockets = Img("assets/craft/rockets.png")
+local gfxcraftnuke = Img("assets/craft/nuke.png")
+local gfxcraftslingshot = Img("assets/craft/slingshot.png")
+	
+local gfxcraftfragile = Img("assets/craft/fragile.png")
+local gfxcraftweak = Img("assets/craft/weak.png")
+local gfxcraftheat = Img("assets/craft/heat.png")
+
+function GfxCraft(class, id)
+	if class == 0 then
+		if id == 0 then
+			return gfxcraftbox
+		end
+		if id == 1 then
+			return gfxcrafttri
+		end
+		if id == 2 then
+			return gfxcraftcircle
+		end
+	end
+	if class == 1 then
+		if id == 0 then
+			return gfxcraftred
+		end
+		if id == 1 then
+			return gfxcraftgreen
+		end
+		if id == 2 then
+			return gfxcraftblue
+		end
+	end
+	if class == 2 then
+		if id == 0 then
+			return gfxcraftwood
+		end
+		if id == 1 then
+			return gfxcraftiron
+		end
+		if id == 2 then
+			return gfxcraftglass
+		end
+	end
+	if class == 3 then
+		if id == 0 then
+			return gfxcraftrockets
+		end
+		if id == 1 then
+			return gfxcraftnuke
+		end
+		if id == 2 then
+			return gfxcraftslingshot
+		end
+	end
+	if class == 4 then
+		if id == 0 then
+			return gfxcraftfragile
+		end
+		if id == 1 then
+			return gfxcraftweak
+		end
+		if id == 2 then
+			return gfxcraftheat
+		end
+	end
+	return gfxwhite
+end
+
 function Shipgfx(id)
 	if id == 0 then
 		return gfxbox
@@ -300,28 +379,25 @@ end
 local TEXTWIDTH = 300
 
 function craft_draw_player(ready,data,place,x,d,tx,align)
+	SetDefaultColor()
 	for i=0, 4 do
 		local y = 10+i*110
-		SetColor(data[i+1])
-		Draw(gfxwhite, x, y)
+		Draw(GfxCraft(i, data[i+1]), x, y)
 		if ready == false then
 		if place == i then
-			SetColor(mod3(data[place+1]-1))
-			Draw(gfxwhite, x+d*110, y)
-			SetColor(mod3(data[place+1]+1))
-			Draw(gfxwhite, x+d*110*2, y)
+			Draw(GfxCraft(i, mod3(data[place+1]-1)), x+d*110, y)
+			Draw(GfxCraft(i, mod3(data[place+1]+1)), x+d*110*2, y)
 		end
 	end
-		SetDefaultColor()
-	end
+end
 	
 	BeginPrint()
-		if ready then
-			love.graphics.printf(" < R E A D Y > ", tx, 500, TEXTWIDTH, "center")
-		else
-			love.graphics.printf(MODTITLES[place+1] .. ":", tx, 100, TEXTWIDTH, align)
-			love.graphics.printf(MODDESC[place+1][data[place+1]+1], tx, 120, TEXTWIDTH, align)
-		end
+	if ready then
+		love.graphics.printf(" < R E A D Y > ", tx, 500, TEXTWIDTH, "center")
+	else
+		love.graphics.printf(MODTITLES[place+1] .. ":", tx, 100, TEXTWIDTH, align)
+		love.graphics.printf(MODDESC[place+1][data[place+1]+1], tx, 120, TEXTWIDTH, align)
+	end
 	EndPrint()
 end
 
@@ -950,4 +1026,5 @@ function love.update(dt)
 		print("unknown gamestate " .. state)
 	end
 end
+
 
