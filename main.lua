@@ -699,7 +699,7 @@ function gamedrawship(body, data, health, maxhealth, heat)
 	
 		local barx,bary = x-12,y+12
 		if outside then
-			barx,bary = Withinx(x+12)-24,Withiny(y-12)+24
+			barx,bary = Withinx(x-12),Withiny(y-12)+22
 		end
 		SetDefaultColor()
 		love.graphics.rectangle("fill", barx, bary, 24, 3)
