@@ -110,9 +110,21 @@ STATESTATE = 6
 state = STATENULL
 --------------------------------------------------
 
-local gfxbox = Img("assets/box.png")
+local gfxwhite = Img("assets/white.png")
 local gfxcircle = Img("assets/circle.png")
+local gfxbox = Img("assets/box.png")
+local gfxtriangle = Img("assets/triangle.png")
 local gfxarrow = Img("assets/arrow.png")
+
+function Shipgfx(id)
+	if id == 0 then
+		return gfxbox
+	elseif id == 1 then
+		return gfxtriangle
+	else
+		return gfxcircle
+	end
+end
 
 --------------------------------------------------
 
@@ -229,13 +241,13 @@ function craft_draw_player(ready,data,place,x,d,tx,align)
 	for i=0, 4 do
 		local y = 10+i*110
 		SetColor(data[i+1])
-		Draw(gfxbox, x, y)
+		Draw(gfxwhite, x, y)
 		if ready == false then
 		if place == i then
 			SetColor(mod3(data[place+1]-1))
-			Draw(gfxbox, x+d*110, y)
+			Draw(gfxwhite, x+d*110, y)
 			SetColor(mod3(data[place+1]+1))
-			Draw(gfxbox, x+d*110*2, y)
+			Draw(gfxwhite, x+d*110*2, y)
 		end
 	end
 		SetDefaultColor()
@@ -420,7 +432,7 @@ function gamedrawship(body, data, health)
 	if health > 0 then
 		local x, y = body:getPosition()
 		SetColor(data[2])
-		Draw(gfxcircle, x-10,y-10)
+		Draw(Shipgfx(data[1]), x-10,y-10)
 		SetDefaultColor()
 	
 		local outside = false
