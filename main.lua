@@ -413,40 +413,40 @@ function isshipoutside(body)
 end
 
 function gamedrawship(body, data, health)
-	local x, y = body:getPosition()
-	Draw(gfxcircle, x-10,y-10)
-	
-	local outside = false
-	local rotation = 0
-	if x < MINX then
-		rotation = 180
-		outside = true
-	elseif x > MAXX then
-		rotation = 0
-		outside = true
-	elseif y < MINY then
-		rotation = -90
-		outside = true
-	elseif y > MAXY then
-		rotation = 90
-		outside = true
-	end
-	if outside then
-		local d = 10
-		Draw(gfxarrow, Withinx(x-10)+d, Withiny(y-10)+d, rotation * (math.pi/180), 1,1,d,d)
-	end
-	
-		local barx,bary = x-12,y+12
-		if outside then
-			barx,bary = Withinx(x+12)-24,Withiny(y-12)+24
-		end
-	SetDefaultColor()
-	love.graphics.rectangle("fill", barx, bary, 24, 3)
 	if health > 0 then
+		local x, y = body:getPosition()
+		Draw(gfxcircle, x-10,y-10)
+	
+		local outside = false
+		local rotation = 0
+		if x < MINX then
+			rotation = 180
+			outside = true
+		elseif x > MAXX then
+			rotation = 0
+			outside = true
+		elseif y < MINY then
+			rotation = -90
+			outside = true
+		elseif y > MAXY then
+			rotation = 90
+			outside = true
+		end
+		if outside then
+			local d = 10
+			Draw(gfxarrow, Withinx(x-10)+d, Withiny(y-10)+d, rotation * (math.pi/180), 1,1,d,d)
+		end
+	
+			local barx,bary = x-12,y+12
+			if outside then
+				barx,bary = Withinx(x+12)-24,Withiny(y-12)+24
+			end
+		SetDefaultColor()
+		love.graphics.rectangle("fill", barx, bary, 24, 3)
 		SetColor(1)
 		love.graphics.rectangle("fill", barx, bary, 24*(health/MAXHEALTH), 3)
+		SetDefaultColor()
 	end
-	SetDefaultColor()
 end
 	
 function game_draw()
@@ -517,13 +517,21 @@ end
 function game_update(dt)
 	game_update_ship(p1body, p1direction, p1hasaction, p1health)
 	game_update_ship(p2body, p2direction, p2hasaction, p2health)
-	if isshipoutside(p1body) then
+	if p1body and isshipoutside(p1body) then
 		p1health = p1health - dt * RADIATION
 	end
-	if isshipoutside(p2body) then
+	if p2body and isshipoutside(p2body) then
 		p2health = p2health - dt * RADIATION
 	end
 	world:update(dt)
+	if p1body and p1health < 0 then
+		p1body:destroy()
+			p1body = nil
+	end
+	if p2body and p2health < 0 then
+		p2body:destroy()
+			p2body = nil
+	end
 end
 
 ---------------------------------------------------
