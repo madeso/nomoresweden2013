@@ -375,7 +375,13 @@ end
 
 function addShip(x,y, data)
 	local body = love.physics.newBody(world,x,y,"dynamic")
-	local shape = love.physics.newCircleShape(SHIPRADIUS)
+	local shape = nil
+	local hull = data[1]
+	if hull == 3 then
+		shape = love.physics.newCircleShape(SHIPRADIUS)
+	else
+		shape = love.physics.newRectangleShape(SHIPRADIUS,SHIPRADIUS)
+	end
 	local fix = love.physics.newFixture(body, shape, Density(data[3]))
 	fix:setRestitution(BOUNCY)
 	fix:setFriction(FRICTION)
