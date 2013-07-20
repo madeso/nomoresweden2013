@@ -419,7 +419,9 @@ end
 function gamedrawship(body, data, health)
 	if health > 0 then
 		local x, y = body:getPosition()
+		SetColor(data[2])
 		Draw(gfxcircle, x-10,y-10)
+		SetDefaultColor()
 	
 		local outside = false
 		local rotation = 0
@@ -438,7 +440,9 @@ function gamedrawship(body, data, health)
 		end
 		if outside then
 			local d = 10
+			SetColor(data[2])
 			Draw(gfxarrow, Withinx(x-10)+d, Withiny(y-10)+d, rotation * (math.pi/180), 1,1,d,d)
+			SetDefaultColor()
 		end
 	
 			local barx,bary = x-12,y+12
@@ -447,7 +451,7 @@ function gamedrawship(body, data, health)
 			end
 		SetDefaultColor()
 		love.graphics.rectangle("fill", barx, bary, 24, 3)
-		SetColor(1)
+		SetColor(data[2])
 		love.graphics.rectangle("fill", barx, bary, 24*(health/MAXHEALTH), 3)
 		SetDefaultColor()
 	end
