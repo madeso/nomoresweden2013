@@ -639,7 +639,7 @@ function Within(mi, v, ma)
 		return mi
 	end
 	if v >= ma then
-		return math.pi
+		return ma
 	end
 	return v
 end
