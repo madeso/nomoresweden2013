@@ -34,6 +34,14 @@ function Density(id)
 	end
 end
 	
+function randomsign()
+	if math.random() > 0.5 then
+		return 1
+	else
+		return -1
+	end
+end
+	
 function SetupMaxHealth(data)
 	local hull = data[3]
 	local weakness = 1
@@ -746,6 +754,8 @@ function gamedrawship(body, data, health, maxhealth, heat)
 end
 	
 function game_draw()
+	love.graphics.push()
+		love.graphics.translate(shakex,shakey)
 	map:draw()
 	BeginPrint()
 		Print(tostring(donetimer), 100, 100)
@@ -766,6 +776,7 @@ function game_draw()
 		love.graphics.circle("fill", bangs[i].x, bangs[i].y, rad)
 		SetDefaultColor()
 	end
+	love.graphics.pop()
 end
 
 function b2i(b)
@@ -794,7 +805,7 @@ function game_onkey_ship(body, key, isdown, left, right, up, down, action, data,
 			hasaction = hasaction + b2i(isdown)
 		end
 		
-		if key == action and isdown and heat <= 1 then
+		if key == action and isdown and heat <= 1 and body then
 			local x,y = body:getPosition()
 			heat = heat + addBullet(x,y,direction,data)
 			Play(sfxshoot)
@@ -867,11 +878,16 @@ function bangs_remove_func(o)
 	end
 end
 
+shaketimer = 0
+shakex = 0
+shakey = 0
+
 function game_update(dt)
 	for i=1, #objects do
 		objects[i].life = objects[i].life + dt
 	end
 	remove_if(objects, objects_remove_func)
+	local totaldmg = 0
 	for i=1, #bangs do
 		bangs[i].life = bangs[i].life + dt
 		local l = bangs[i].life/MAXBANGLIFE
@@ -879,8 +895,16 @@ function game_update(dt)
 		local r,g,b = RGB(bangs[i].color)
 		bangs[i].l = l
 		bangs[i].rad = rad
+		totaldmg = math.max(totaldmg,math.min(0.1,bangs[i].dmg))
 	end
 	remove_if(bangs, bangs_remove_func)
+	shaketimer = shaketimer + dt
+	if shaketimer > 0.01 then
+			SHAKESCALE = 300
+		shaketimer = shaketimer - 0.01
+		shakex = totaldmg * math.random() * SHAKESCALE * randomsign()
+		shakey = totaldmg * math.random() * SHAKESCALE * randomsign()
+	end
 	p1health,p1heat = game_update_ship(p1body, p1direction, p1hasaction, p1health, p1data,dt,p1heat)
 	p2health,p2heat = game_update_ship(p2body, p2direction, p2hasaction, p2health, p2data,dt,p2heat)
 	if p1body and isshipoutside(p1body) then
