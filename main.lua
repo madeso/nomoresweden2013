@@ -69,6 +69,10 @@ function Play(x)
 	x:rewind()
 	love.audio.play(x)
 end
+	
+function Random(a)
+	return a[math.random(#a)]
+end
 
 function remove_if(list, func)
 	local toremove = {}
@@ -1008,19 +1012,20 @@ end
 ---------------------------------------------------
 
 function stat_setup()
+	if statstate == 0 then
+		stattext = Random({"The pirates fought bravley and was ultimatly both killed", "404: No winner available, all pirates died", "Somehow both players died..."})
+	elseif statstate == 1 then
+		stattext = Random({"Captain left rules again!", "Right lost due to left being better", "Captain left got a hook for a hand and right was no match for him"})
+	elseif statstate == 2 then
+		stattext = Random({"Captain right beats lefty easily", "Lefty was no match for the captain", "Captain right rules the contaminated space!"})
+	else
+		stattext = "Unknown statstate " .. tostring(statstate)
+	end
 end
 	
 function stat_draw()
 	Draw(starsem)
-	if statstate == 0 then
-		Print("Draw", 100,100)
-	elseif statstate == 1 then
-		Print("Left player wins", 100,100)
-	elseif statstate == 2 then
-		Print("Right player wins", 100,100)
-	else
-		Print("Unknown statstate " .. tostring(statstate), 100,100)
-	end
+		love.graphics.printf(stattext, 10, 250, 780, "center")
 end
 	
 function stat_onkey(key,down)
