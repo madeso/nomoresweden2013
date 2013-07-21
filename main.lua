@@ -383,7 +383,11 @@ end
 
 function title_draw()
 	BeginPrint()
-		Print("The game", 300, 100)
+		Print("a nomoresweden 2013", 200, 370)
+		Print("by @sirGustav", 250, 400)
+		Print("Super Ultimate Pirates", 140, 150)
+		Print("in Extremly Radiated Spaces", 100, 200)
+		Print("press retur or B on gamepad", 100, 550)
 	EndPrint()
 end
 
