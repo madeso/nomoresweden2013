@@ -958,9 +958,9 @@ function stat_draw()
 	if statstate == 0 then
 		Print("Draw", 100,100)
 	elseif statstate == 1 then
-		Print("Player 1 wins", 100,100)
+		Print("Left player wins", 100,100)
 	elseif statstate == 2 then
-		Print("Player 2 wins", 100,100)
+		Print("Right player wins", 100,100)
 	else
 		Print("Unknown statstate " .. tostring(statstate), 100,100)
 	end
