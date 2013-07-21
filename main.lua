@@ -238,6 +238,8 @@ local gfxcraftslingshot = Img("assets/craft/slingshot.png")
 local gfxcraftfragile = Img("assets/craft/fragile.png")
 local gfxcraftweak = Img("assets/craft/weak.png")
 local gfxcraftheat = Img("assets/craft/heat.png")
+		
+		local gfxstar = Img("assets/star.png")
 
 		local gfxscreencraft = Img("assets/screens/craft.png")
 
@@ -687,6 +689,22 @@ function game_setup()
 	
 	p1heat = 0
 	p2heat = 0
+		
+	local e = love.graphics.newParticleSystem(gfxstar, 400)
+	local r,g,b = 255,255,255
+	e:setPosition(0,0)
+	e:setParticleLife(10,30)
+	e:setEmissionRate(40)
+	e:setSizes(1, 1)
+	e:setSpeed(0.1,5)
+	e:setSpread(2*math.pi)
+	e:setColors(r,g,b,0, r,g,b,100,r,g,b,0)
+		e:start()
+			starsem = e
+	for i=0, 70 do
+		e:setPosition(math.random(800), math.random(600))
+		e:update(0.1)
+	end
 end
 	
 function Within(mi, v, ma)
@@ -778,6 +796,7 @@ function game_draw()
 	
 	Draw(p1em)
 	Draw(p2em)
+	Draw(starsem)
 	gamedrawship(p1body, p1data, p1health, p1maxhealth, p1heat)
 	gamedrawship(p2body, p2data, p2health, p2maxhealth, p2heat)
 	for i=1, #objects do
@@ -941,6 +960,8 @@ function game_update(dt)
 	if p2body then p2em:setPosition(p2body:getPosition()) end
 	p1em:update(sdt)
 	p2em:update(sdt)
+			starsem:setPosition(math.random(800), math.random(600))
+	starsem:update(sdt)
 	world:update(sdt)
 	if p1body and p1health < 0 then
 		p1body:destroy()
