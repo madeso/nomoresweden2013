@@ -401,14 +401,19 @@ function title_setup()
 	p2craftready = false
 end
 
+function CenterPrint(t, y)
+	local d = 10
+	love.graphics.printf(t, d, y, 800-d*2, "center")
+end
+
 function title_draw()
 	Draw(starsem)
 	BeginPrint()
-		Print("a nomoresweden 2013", 200, 370)
-		Print("by @sirGustav", 250, 400)
-		Print("Super Ultimate Pirates", 140, 150)
-		Print("in Extremly Radiated Spaces", 100, 200)
-		Print("press retur or B on gamepad", 100, 550)
+		CenterPrint("a nomoresweden 2013", 370)
+		CenterPrint("game by @sirGustav", 400)
+		CenterPrint("Super Ultimate Pirates", 150)
+		CenterPrint("in Extremly Radiated Spaces", 200)
+		CenterPrint("press retur or B on gamepad", 550)
 	EndPrint()
 end
 
