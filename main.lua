@@ -167,6 +167,22 @@ function love.load()
 	
 	p1data = {RStat(),RStat(),RStat(),RStat(),RStat()}
 	p2data = {RStat(),RStat(),RStat(),RStat(),RStat()}
+	
+	local e = love.graphics.newParticleSystem(gfxstar, 400)
+	local r,g,b = 255,255,255
+	e:setPosition(0,0)
+	e:setParticleLife(10,30)
+	e:setEmissionRate(40)
+	e:setSizes(1, 1)
+	e:setSpeed(0.1,5)
+	e:setSpread(2*math.pi)
+	e:setColors(r,g,b,0, r,g,b,100,r,g,b,0)
+	e:start()
+	starsem = e
+	for i=0, 70 do
+		e:setPosition(math.random(800), math.random(600))
+		e:update(0.1)
+	end
 end
 
 --------------------------------------------------
@@ -239,7 +255,7 @@ local gfxcraftfragile = Img("assets/craft/fragile.png")
 local gfxcraftweak = Img("assets/craft/weak.png")
 local gfxcraftheat = Img("assets/craft/heat.png")
 		
-		local gfxstar = Img("assets/star.png")
+		gfxstar = Img("assets/star.png")
 
 		local gfxscreencraft = Img("assets/screens/craft.png")
 
@@ -382,6 +398,7 @@ function title_setup()
 end
 
 function title_draw()
+	Draw(starsem)
 	BeginPrint()
 		Print("a nomoresweden 2013", 200, 370)
 		Print("by @sirGustav", 250, 400)
@@ -407,6 +424,8 @@ end
 
 
 function title_update(dt)
+	starsem:setPosition(math.random(800), math.random(600))
+	starsem:update(dt)
 end
 
 MODTITLES = {"Shape", "Color", "Hull", "Weapon", "Flaw"}
@@ -693,22 +712,6 @@ function game_setup()
 	
 	p1heat = 0
 	p2heat = 0
-		
-	local e = love.graphics.newParticleSystem(gfxstar, 400)
-	local r,g,b = 255,255,255
-	e:setPosition(0,0)
-	e:setParticleLife(10,30)
-	e:setEmissionRate(40)
-	e:setSizes(1, 1)
-	e:setSpeed(0.1,5)
-	e:setSpread(2*math.pi)
-	e:setColors(r,g,b,0, r,g,b,100,r,g,b,0)
-		e:start()
-			starsem = e
-	for i=0, 70 do
-		e:setPosition(math.random(800), math.random(600))
-		e:update(0.1)
-	end
 end
 	
 function Within(mi, v, ma)
@@ -964,7 +967,7 @@ function game_update(dt)
 	if p2body then p2em:setPosition(p2body:getPosition()) end
 	p1em:update(sdt)
 	p2em:update(sdt)
-			starsem:setPosition(math.random(800), math.random(600))
+	starsem:setPosition(math.random(800), math.random(600))
 	starsem:update(sdt)
 	world:update(sdt)
 	if p1body and p1health < 0 then
@@ -1008,6 +1011,7 @@ function stat_setup()
 end
 	
 function stat_draw()
+	Draw(starsem)
 	if statstate == 0 then
 		Print("Draw", 100,100)
 	elseif statstate == 1 then
@@ -1026,6 +1030,8 @@ function stat_onkey(key,down)
 end
 	
 function stat_update(dt)
+	starsem:setPosition(math.random(800), math.random(600))
+	starsem:update(dt)
 end
 
 ---------------------------------------------------
