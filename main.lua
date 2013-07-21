@@ -194,6 +194,21 @@ local sfxgrenade = Sfx("sfx/grenade.wav")
 local sfxrocket = Sfx("sfx/rocket.wav")
 local sfxnuke = Sfx("sfx/nuke.wav")
 
+function SetPitch(p)
+	sfxgui:setPitch(p)
+	sfxselect:setPitch(p)
+	sfxenter:setPitch(p)
+	
+	sfxshoot:setPitch(p)
+	sfxdie:setPitch(p)
+
+	sfxgrenade:setPitch(p)
+	sfxrocket:setPitch(p)
+	sfxnuke:setPitch(p)
+		
+	bgmusic:setPitch(p)
+end
+
 --------------------------------------------------
 
 local gfxwhite = Img("assets/white.png")
@@ -883,6 +898,9 @@ shakex = 0
 shakey = 0
 
 function game_update(dt)
+	local delta = 1 - donetimer/(DONETIME*3)
+	SetPitch(delta)
+	local sdt = delta * dt
 	for i=1, #objects do
 		objects[i].life = objects[i].life + dt
 	end
@@ -905,19 +923,19 @@ function game_update(dt)
 		shakex = totaldmg * math.random() * SHAKESCALE * randomsign()
 		shakey = totaldmg * math.random() * SHAKESCALE * randomsign()
 	end
-	p1health,p1heat = game_update_ship(p1body, p1direction, p1hasaction, p1health, p1data,dt,p1heat)
-	p2health,p2heat = game_update_ship(p2body, p2direction, p2hasaction, p2health, p2data,dt,p2heat)
+	p1health,p1heat = game_update_ship(p1body, p1direction, p1hasaction, p1health, p1data,sdt,p1heat)
+	p2health,p2heat = game_update_ship(p2body, p2direction, p2hasaction, p2health, p2data,sdt,p2heat)
 	if p1body and isshipoutside(p1body) then
-		p1health = p1health - dt * RADIATION
+		p1health = p1health - sdt * RADIATION
 	end
 	if p2body and isshipoutside(p2body) then
-		p2health = p2health - dt * RADIATION
+		p2health = p2health - sdt * RADIATION
 	end
 	if p1body then p1em:setPosition(p1body:getPosition()) end
 	if p2body then p2em:setPosition(p2body:getPosition()) end
-	p1em:update(dt)
-	p2em:update(dt)
-	world:update(dt)
+	p1em:update(sdt)
+	p2em:update(sdt)
+	world:update(sdt)
 	if p1body and p1health < 0 then
 		p1body:destroy()
 		p1body = nil
@@ -942,9 +960,9 @@ function game_update(dt)
 				statstate = 1
 			end
 			SetState(STATESTAT)
-					world:destroy()
-					world = nil
-					map = nil
+			world:destroy()
+			world = nil
+			map = nil
 		end
 	end
 end
@@ -981,6 +999,7 @@ end
 function SetState(nextstate)
 	state = nextstate
 	-- PauseAllAudio()
+	SetPitch(1)
 	if state == STATETITLE then title_setup()
 	elseif state == STATECRAFT then craft_setup()
 	elseif state == STATEGAME then game_setup()
