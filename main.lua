@@ -19,7 +19,7 @@ MAXX = 800+SHIPRADIUS
 MAXY = 600+SHIPRADIUS
 
 MAXHEALTH = 1
-RADIATION = 0.2
+RADIATION = 0.35
 	
 function Density(id)
 	if id == 0 then
@@ -347,7 +347,7 @@ function setgamepads()
 	p1down = p1.."+ax5"
 	p1up = p1.."-ax5"
 	p1action = p1.."btn3"
-	p1start = p1.."btn4"
+	p1start = p1.."btn10"
 
 	local p2 = "joy2."
 	p2left = p2.."-ax4"
@@ -355,7 +355,7 @@ function setgamepads()
 	p2down = p2.."+ax5"
 	p2up = p2.."-ax5"
 	p2action = p2.."btn3"
-	p2start = p2.."btn4"
+	p2start = p2.."btn10"
 end
 
 function determinesuperkey(key)
@@ -590,7 +590,7 @@ function addBullet(x,y,dir,data)
 	bullet.gfx = gfxbullet
 	bullet.maxlife = rsel(weapon, 2, 3, 5)
 	bullet.bangsize = rsel(weapon, 100, 500, 300)
-	bullet.damage = rsel(weapon, 4, 2, 0.01)
+	bullet.damage = rsel(weapon, 3, 2, 0.01)
 	bullet.force = rsel(weapon, 100, 2000, 70000)
 	bullet.sfx = rsel(weapon, sfxrocket,sfxnuke,sfxgrenade)
 	bullet.body = body
@@ -772,9 +772,6 @@ function game_draw()
 	love.graphics.push()
 		love.graphics.translate(shakex,shakey)
 	map:draw()
-	BeginPrint()
-		Print(tostring(donetimer), 100, 100)
-	EndPrint()
 	
 	Draw(p1em)
 	Draw(p2em)
@@ -832,6 +829,12 @@ end
 function game_onkey(key,down)
 	p1direction,p1hasaction,p1heat = game_onkey_ship(p1body, key, down, p1left, p1right, p1up, p1down, p1action, p1data, p1direction, p1hasaction,p1heat)
 	p2direction,p2hasaction,p2heat = game_onkey_ship(p2body, key, down, p2left, p2right, p2up, p2down, p2action, p2data, p2direction, p2hasaction,p2heat)
+	if key == p1start and down then
+		p1health = -1
+	end
+	if key == p2start and down then
+		p2health = -1
+	end
 end
 	
 function game_update_ship(body, direction, hasaction, health,data,dt,heat)
@@ -947,6 +950,10 @@ function game_update(dt)
 		p2body = nil
 		Play(sfxdie)
 		p2em:stop()
+	end
+		
+	if p1body == nil and p2body==nil then
+		donetimer = donetimer + DONETIME
 	end
 	
 	if p1body == nil or p2body==nil then
