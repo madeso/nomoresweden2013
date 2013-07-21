@@ -239,6 +239,8 @@ local gfxcraftfragile = Img("assets/craft/fragile.png")
 local gfxcraftweak = Img("assets/craft/weak.png")
 local gfxcraftheat = Img("assets/craft/heat.png")
 
+		local gfxscreencraft = Img("assets/screens/craft.png")
+
 function GfxCraft(class, id)
 	if class == 0 then
 		if id == 0 then
@@ -443,6 +445,7 @@ function craft_draw_player(ready,data,place,x,d,tx,align)
 end
 
 function craft_draw()
+	Draw(gfxscreencraft, 0, 0)
 	craft_draw_player(p1craftready, p1data,p1place,10,1,120,"left")
 	craft_draw_player(p2craftready, p2data,p2place,690,-1,680-TEXTWIDTH,"right")
 end
